@@ -12,7 +12,7 @@ int main(int,char**)
 {
   const int msize = 10;
 
-  message_queue mq;
+  private_list pl;
   shared_ptr< message > messages[ msize ];
   
   for ( int i = 0; i < msize; i++ )
@@ -21,14 +21,14 @@ int main(int,char**)
     messages[i]->value = i+1;
   }
 
-  mq.write_to_master( messages[0] );
+  pl.push( messages[0] );
   
   shared_ptr< message >  m;
-  if ( mq.read_for_master( m ) )
+  if ( pl.top( m ) )
   {
     cout << "push+top. Got: " << m->value << endl;
   }
-  if ( mq.read_for_master( m ) )
+  if ( pl.top( m ) )
   {
     cout << "push+top. error" << endl;
   }
@@ -36,10 +36,10 @@ int main(int,char**)
   {
     cout << "push+top+top. ok" << endl;
   }
-  mq.write_to_master( messages[0] );
-  mq.read_for_master( m );
-  mq.write_to_master( messages[1] );
-  if ( mq.read_for_master( m ) )
+  pl.push( messages[0] );
+  pl.top( m );
+  pl.push( messages[1] );
+  if ( pl.top( m ) )
   {
     cout << "push+top. Got: " << m->value << endl;
   }

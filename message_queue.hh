@@ -10,9 +10,11 @@ namespace message_queues
     typedef std::tr1::shared_ptr< message > ptr;
     message();
     
+    int value;
+
     bool used;
-    message* prev;
-    message* next;
+    ptr prev;
+    ptr next;
   };
 
   class private_list
@@ -21,8 +23,8 @@ namespace message_queues
       private_list();
       virtual ~private_list();
 
-      bool top( message::ptr m );
-      void push( message::ptr m );
+      bool top( message::ptr& m );
+      void push( message::ptr& m );
 
     private:
       message::ptr first_to_write;
@@ -38,10 +40,10 @@ namespace message_queues
       message_queue();
       virtual ~message_queue();
 
-      void write_to_master( message& m );
-      bool read_for_master( message& m );
-      void write_to_slave( message& m );
-      bool read_for_slave( message& m );
+      void write_to_master( message::ptr& m );
+      bool read_for_master( message::ptr& m );
+      void write_to_slave( message::ptr& m );
+      bool read_for_slave( message::ptr& m );
 
     private:
       private_list master_queue;

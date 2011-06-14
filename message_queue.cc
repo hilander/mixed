@@ -9,8 +9,6 @@ using namespace message_queues;
 message::message()
 : used( false )
 {
-  prev = 0;
-  next = 0;
 }
 
 // private_list:
@@ -18,33 +16,32 @@ private_list::private_list()
 {
   first_to_write = shared_ptr< message >( new message() );
   first_to_write->used = true;
-  first_to_read = first_to_write;
+  first_to_read = shared_ptr< message >( first_to_write );
 }
 
 private_list::~private_list()
 {
 }
 
-bool private_list::top( message::ptr m )
+bool private_list::top( message::ptr& m )
 {
   if ( first_to_read->used )
   {
-    if ( first_to_read->next != 0 )
+    if ( first_to_read->next.get() != 0 )
     {
       // move cursor, set out value to the position:
-      m.reset( first_to_read->next );
-      shared_ptr< message > sp( first_to_read->next );
-      first_to_read.swap( sp );
-      first_to_read->prev->next = 0;
-      first_to_read->prev = 0;
+      m = first_to_read->next ;
+      first_to_read = first_to_read->next;
+      first_to_read->prev->next.reset();
+      first_to_read->prev.reset();
       first_to_read->used = true;
+
       // once again, move cursor (if anything exists):
       if ( first_to_read->next != 0 )
       {
-        shared_ptr< message > ssp( first_to_read->next );
-        first_to_read.swap( ssp );
-        first_to_read->prev->next = 0;
-        first_to_read->prev = 0;
+        first_to_read = first_to_read->next;
+        first_to_read->prev->next.reset();
+        first_to_read->prev.reset();
       }
       return true;
     }
@@ -54,20 +51,49 @@ bool private_list::top( message::ptr m )
   {
     m = first_to_read;
     first_to_read->used = true;
-    if ( first_to_read->next != 0 )
+    if ( first_to_read->next.get() != 0 )
     {
-      shared_ptr< message > sp( first_to_read->next );
-      first_to_read.swap( sp );
-      first_to_read->prev->next = 0;
-      first_to_read->prev = 0;
+      first_to_read = first_to_read->next;
+      first_to_read->prev->next.reset();
+      first_to_read->prev.reset();
     }
     return true;
   }
 }
 
-void private_list::push( message::ptr m )
+void private_list::push( message::ptr& m )
 {
-  m->prev = first_to_write.get();
-  first_to_write->next = m.get();
-  first_to_write.swap( m );
+  m->prev = first_to_write;
+  first_to_write->next = m;
+  first_to_write = m;
 }
+
+// message_queue:
+message_queue::message_queue()
+{
+}
+
+message_queue::~message_queue()
+{
+}
+
+void message_queue::write_to_master( message::ptr& m )
+{
+  master_queue.push( m );
+}
+
+bool message_queue::read_for_master( message::ptr& m )
+{
+  return master_queue.top( m );
+}
+
+void message_queue::write_to_slave( message::ptr& m )
+{
+  slave_queue.push( m );
+}
+
+bool message_queue::read_for_slave( message::ptr& m )
+{
+  return slave_queue.top( m );
+}
+
