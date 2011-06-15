@@ -34,7 +34,7 @@ void coroutine::init()
   own_context.uc_stack.ss_sp = ::malloc( StackSize ); // no valgrind warnings
   own_context.uc_stack.ss_size = StackSize;
   own_context.uc_link = 0;
-  ::makecontext( &own_context, ( void(*)() )( &runner ), 1, (int)this );
+  ::makecontext( &own_context, ( void(*)() )( &runner ), 1, this );
   
 }
 

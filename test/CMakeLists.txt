@@ -17,3 +17,7 @@ add_executable ( mt-message_queue mt-message_queue.cc )
 target_link_libraries ( mt-message_queue libmixed )
 target_link_libraries ( mt-message_queue pthread )
 
+add_executable ( pthread-message_queue pthread-message_queue.cc )
+target_link_libraries ( pthread-message_queue libmixed )
+target_link_libraries ( pthread-message_queue pthread )
+
