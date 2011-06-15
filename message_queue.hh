@@ -3,20 +3,10 @@
 
 #include <tr1/memory>
 
+#include "message.hh"
+
 namespace message_queues
 {
-  struct message : std::tr1::enable_shared_from_this< message >
-  {
-    typedef std::tr1::shared_ptr< message > ptr;
-    message();
-    
-    int value;
-
-    bool used;
-    ptr prev;
-    ptr next;
-  };
-
   class private_list
   {
     public:

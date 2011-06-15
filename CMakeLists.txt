@@ -36,6 +36,7 @@ set ( LIBMIXED_SOURCES
 #  scheduler.cpp
 #  userspace_scheduler.cpp
 #  scheduler_tools.cpp
+  "message.cc"
   message_queue.cc
   epoller.cc
 #	mutex_trylock.cpp

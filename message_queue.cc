@@ -5,12 +5,6 @@ using std::tr1::shared_ptr;
 
 using namespace message_queues;
 
-// message:
-message::message()
-: used( false )
-{
-}
-
 // private_list:
 private_list::private_list()
 {

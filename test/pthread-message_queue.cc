@@ -74,7 +74,7 @@ thread_t message_reader( void* d )
 
 int main(int,char**)
 {
-  const int msize = 10000;
+  const int msize = 100000;
   list< shared_ptr< message > > ml;
   shared_ptr< ::pthread_mutex_t > mt( new ::pthread_mutex_t() );
   ::pthread_mutex_init( mt.get(), 0 );
