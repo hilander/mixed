@@ -8,19 +8,10 @@
 
 namespace epollers
 {
-  class fail
-  {
-    public:
-      fail( int e ) : error( e ) {}
-
-      int error;
-  };
-
   class epoller
   {
 		private:
 			epoller();
-
 
     public:
 			static std::tr1::shared_ptr< epoller > create();

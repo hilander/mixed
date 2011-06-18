@@ -33,7 +33,7 @@ set ( LIBMIXED_SOURCES
   fiber.cc
 #  manager.cpp
 #  scheduler_tools.cpp
-#  scheduler.cpp
+  scheduler.cc
 #  userspace_scheduler.cpp
 #  scheduler_tools.cpp
   "message.cc"

@@ -21,3 +21,7 @@ add_executable ( pthread-message_queue pthread-message_queue.cc )
 target_link_libraries ( pthread-message_queue libmixed )
 target_link_libraries ( pthread-message_queue pthread )
 
+add_executable ( pthread-epoller-server pthread-epoller-server.cc )
+target_link_libraries ( pthread-epoller-server libmixed )
+target_link_libraries ( pthread-epoller-server pthread )
+

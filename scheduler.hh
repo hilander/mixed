@@ -10,7 +10,7 @@ namespace schedulers
   class scheduler
   {
     public:
-      typedef std::shared_ptr< scheduler > ptr;
+      typedef std::tr1::shared_ptr< scheduler > ptr;
 
       void run();
   };
