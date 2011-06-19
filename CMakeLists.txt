@@ -34,7 +34,7 @@ set ( LIBMIXED_SOURCES
 #  manager.cpp
 #  scheduler_tools.cpp
   scheduler.cc
-#  userspace_scheduler.cpp
+  worker.cc
 #  scheduler_tools.cpp
   "message.cc"
   message_queue.cc

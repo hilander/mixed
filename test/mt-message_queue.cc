@@ -60,7 +60,7 @@ thread_t message_writer( void* d )
 
 int main(int,char**)
 {
-  const int msize = 100000;
+  const int msize = 10;
   shared_ptr< message_queue > mq( new message_queue() );
   starter_pack sp;
 

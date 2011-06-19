@@ -1,5 +1,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
+#include <signal.h>
 
 #include <string>
 #include <sstream>
@@ -50,7 +51,7 @@ class f_listener
 			while ( ::read( fd, recbuf, 1 ) != 0 )
 			{
 			}
-			std::cout << "Server listener: end." << std::endl;
+			//std::cout << "Server listener: end." << std::endl;
 			::close( fd );
 		}
 
@@ -186,7 +187,8 @@ class server_socket
 
 int main(int,char**)
 {
+  ::signal( SIGPIPE, SIG_IGN );
 	server_socket::ptr p = server_socket::create( 8100 );
-	p->go( 1 );
+	p->go( 100 );
 	return 0;
 }

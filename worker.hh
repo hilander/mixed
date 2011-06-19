@@ -3,20 +3,33 @@
 
 #include <tr1/memory>
 
-#include "coroutine.hh"
 #include "scheduler.hh"
+#include "message_queue.hh"
+#include "epoller.hh"
 
 namespace workers
 {
   class worker
   {
     public:
-      typedef std::shared_ptr< worker > ptr;
+      worker();
+      virtual ~worker();
 
-      static void run();
+      typedef std::tr1::shared_ptr< worker > ptr;
+
+      void run();
+      void iteration();
       
     private:
-      schedulers::scheduler::ptr sched;
+      void do_epolls();
+      void process_messages();
+      bool finished();
+
+      schedulers::scheduler sched;
+      message_queues::message_queue pipe;
+      epollers::epoller io_facility;
+
+      bool master_allowed;
   };
 }
 

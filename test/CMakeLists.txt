@@ -13,6 +13,9 @@ target_link_libraries ( private_list libmixed )
 add_executable ( message_queue message_queue.cc )
 target_link_libraries ( message_queue libmixed )
 
+add_executable ( mt-pipe mt-pipe.cc )
+target_link_libraries ( mt-pipe pthread )
+
 add_executable ( mt-message_queue mt-message_queue.cc )
 target_link_libraries ( mt-message_queue libmixed )
 target_link_libraries ( mt-message_queue pthread )
@@ -24,4 +27,8 @@ target_link_libraries ( pthread-message_queue pthread )
 add_executable ( pthread-epoller-server pthread-epoller-server.cc )
 target_link_libraries ( pthread-epoller-server libmixed )
 target_link_libraries ( pthread-epoller-server pthread )
+
+add_executable ( pthread-epoller-client pthread-epoller-client.cc )
+target_link_libraries ( pthread-epoller-client libmixed )
+target_link_libraries ( pthread-epoller-client pthread )
 
