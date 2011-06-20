@@ -7,6 +7,12 @@ using namespace std;
 #include "message.hh"
 using namespace message_queues;
 
+#include "scheduler.hh"
+using namespace schedulers;
+
+#include "epoller.hh"
+using namespace epollers;
+
 #include "worker.hh"
 using namespace workers;
 
@@ -19,6 +25,12 @@ worker::~worker()
 {
 }
 
+void worker::init()
+{
+  sched = scheduler::create();
+  io_facility = epoller::create();
+}
+
 void worker::run()
 {
   while ( !finished() )
@@ -29,7 +41,7 @@ void worker::run()
 
 void worker::iteration()
 {
-  sched.run();
+  sched->run();
   do_epolls();
   process_messages();
 }
@@ -37,7 +49,7 @@ void worker::iteration()
 void worker::do_epolls()
 {
   int how_many = 0;
-  vector< shared_ptr< ::epoll_event > > affected_fds = io_facility.do_epolls( how_many );
+  vector< shared_ptr< ::epoll_event > > affected_fds = io_facility->do_epolls( how_many );
   if ( how_many > 0 )
   {
     // do some reads, writes, etc.

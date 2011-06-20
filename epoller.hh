@@ -14,7 +14,9 @@ namespace epollers
 			epoller();
 
     public:
-			static std::tr1::shared_ptr< epoller > create();
+      typedef std::tr1::shared_ptr< epoller > ptr;
+
+			static ptr create();
 
 			virtual ~epoller();
 

@@ -5,6 +5,8 @@
 
 #include <list>
 
+#include "fiber.hh"
+
 namespace schedulers
 {
   class scheduler
@@ -12,7 +14,19 @@ namespace schedulers
     public:
       typedef std::tr1::shared_ptr< scheduler > ptr;
 
+      static ptr create();
+
       void run();
+
+      int workload();
+
+    private:
+      scheduler();
+
+      void init();
+
+      std::list< std::tr1::shared_ptr< fibers::fiber > > runners;
+      std::tr1::shared_ptr< ::ucontext_t > own_context;
   };
 }
 

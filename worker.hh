@@ -12,22 +12,25 @@ namespace workers
   class worker
   {
     public:
-      worker();
+      typedef std::tr1::shared_ptr< worker > ptr;
+
       virtual ~worker();
 
-      typedef std::tr1::shared_ptr< worker > ptr;
+      void init();
 
       void run();
       void iteration();
       
     private:
+      worker();
+
       void do_epolls();
       void process_messages();
       bool finished();
 
-      schedulers::scheduler sched;
+      schedulers::scheduler::ptr sched;
       message_queues::message_queue pipe;
-      epollers::epoller io_facility;
+      epollers::epoller::ptr io_facility;
 
       bool master_allowed;
   };

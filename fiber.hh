@@ -7,8 +7,9 @@ namespace fibers
 {
   class fiber : public coroutines::coroutine
   {
-    // Types and enums:
     public:
+    typedef std::tr1::shared_ptr< fiber > ptr;
+
     enum current_state
     {
       READY,
@@ -17,7 +18,6 @@ namespace fibers
       RUNNING
     };
 
-    // Running:
     public:
       fiber();
 
