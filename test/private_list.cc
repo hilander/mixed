@@ -18,7 +18,7 @@ int main(int,char**)
   for ( int i = 0; i < msize; i++ )
   {
     messages[ i ].reset( new message() );
-    messages[i]->value = i+1;
+    messages[i]->m_type = i+1;
   }
 
   pl.push( messages[0] );
@@ -26,7 +26,7 @@ int main(int,char**)
   shared_ptr< message >  m;
   if ( pl.top( m ) )
   {
-    cout << "push+top. Got: " << m->value << endl;
+    cout << "push+top. Got: " << m->m_type << endl;
   }
   if ( pl.top( m ) )
   {
@@ -41,7 +41,7 @@ int main(int,char**)
   pl.push( messages[1] );
   if ( pl.top( m ) )
   {
-    cout << "push+top. Got: " << m->value << endl;
+    cout << "push+top. Got: " << m->m_type << endl;
   }
   return 0;
 }

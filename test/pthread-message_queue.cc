@@ -28,7 +28,7 @@ thread_t message_writer( void* d )
   for ( int i = 0; i < m_counter; i++ )
   {
     m.reset( new message() );
-    m->value = i+1;
+    m->m_type = i+1;
     ::pthread_mutex_lock( pack->mt.get() );
     pack->ml.push_front( m );
     ::pthread_mutex_unlock( pack->mt.get() );
@@ -54,7 +54,7 @@ thread_t message_reader( void* d )
     while ( last_elem == pack->ml.rend() )
       ;
     m = *last_elem;
-    if ( m->value != i+1 )
+    if ( m->m_type != i+1 )
     {
       cout << "Reader: bad value read. in " << i+1 << " attempt" << endl;
       break;

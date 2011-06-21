@@ -18,7 +18,7 @@ int main(int,char**)
   for ( int i = 0; i < msize; i++ )
   {
     messages[ i ].reset( new message() );
-    messages[i]->value = i+1;
+    messages[i]->m_type = i+1;
   }
 
   mq.write_to_master( messages[0] );
@@ -26,7 +26,7 @@ int main(int,char**)
   shared_ptr< message >  m;
   if ( mq.read_for_master( m ) )
   {
-    cout << "push+top. Got: " << m->value << endl;
+    cout << "push+top. Got: " << m->m_type << endl;
   }
   if ( mq.read_for_master( m ) )
   {
@@ -41,7 +41,7 @@ int main(int,char**)
   mq.write_to_master( messages[1] );
   if ( mq.read_for_master( m ) )
   {
-    cout << "push+top. Got: " << m->value << endl;
+    cout << "push+top. Got: " << m->m_type << endl;
   }
   return 0;
 }

@@ -30,6 +30,10 @@ class fiber_runner
     shared_ptr< ::ucontext_t > worker_ctx;
 };
 
+scheduler::scheduler()
+{
+}
+
 scheduler::ptr scheduler::create()
 {
   scheduler::ptr p( new scheduler() );

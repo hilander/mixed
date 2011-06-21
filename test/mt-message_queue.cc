@@ -26,7 +26,7 @@ thread_t message_reader( void* d )
   for ( int i = 0; i < m_counter; i++ )
   {
     m.reset( new message() );
-    m->value = i+1;
+    m->m_type = i+1;
     pack->mq->write_to_master( m );
   }
   return 0;
@@ -43,7 +43,7 @@ thread_t message_writer( void* d )
     while ( !pack->mq->read_for_master( m ) )
     {
     }
-    if ( m->value != i+1 )
+    if ( m->m_type != i+1 )
     {
       cout << "Reader: bad value read. in " << i+1 << " attempt" << endl;
       break;

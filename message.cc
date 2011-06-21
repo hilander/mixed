@@ -9,3 +9,13 @@ message::message()
 message::~message()
 {
 }
+
+fiber_message::fiber_message()
+{
+	m_type = message_type::FiberMessage;
+}
+
+service_message::service_message()
+{
+	m_type = message_type::ServiceMessage;
+}
