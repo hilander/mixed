@@ -7,6 +7,11 @@
 
 #include "fiber.hh"
 
+namespace workers
+{
+	class worker;
+}
+
 namespace schedulers
 {
   class scheduler
@@ -16,17 +21,27 @@ namespace schedulers
 
       static ptr create();
 
+      static ptr create( std::tr1::shared_ptr< workers::worker > o );
+
       void run();
 
       int workload();
 
+      void init();
+
+			void insert( fibers::fiber::ptr f );
+
+			void set_owner( std::tr1::shared_ptr< workers::worker > o );
+
     private:
       scheduler();
 
-      void init();
+			void remove_finished();
 
-      std::list< std::tr1::shared_ptr< fibers::fiber > > runners;
+      std::list< fibers::fiber::ptr > runners;
       std::tr1::shared_ptr< ::ucontext_t > own_context;
+			std::tr1::shared_ptr< vector< char > > own_stack;
+			std::tr1::shared_ptr< workers::worker > owner;
   };
 }
 

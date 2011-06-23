@@ -6,6 +6,11 @@
 
 #include "coroutine.hh"
 
+namespace workers
+{
+	class worker;
+}
+
 namespace fibers
 {
   class fiber : public coroutines::coroutine
@@ -20,8 +25,7 @@ namespace fibers
       BLOCKED,
 			BLOCKED_FOR_READ,
 			BLOCKED_FOR_WRITE,
-			BLOCKED_FOR_MESSAGE,
-      RUNNING
+			BLOCKED_FOR_MESSAGE
     };
 
     public:
@@ -31,7 +35,7 @@ namespace fibers
 
       virtual void go() = 0;
 
-      virtual void run( ::ucontext_t* return_to );
+      virtual void start();
 
       current_state get_state();
 
@@ -43,11 +47,14 @@ namespace fibers
 
 			void set_last_write( ssize_t s );
 
+			void set_owner( std::tr1::shared_ptr< workers::worker > o );
+
     private:
       current_state state;
 			std::tr1::shared_ptr< std::vector< char > > rw_buffer;
 			ssize_t last_read;
 			ssize_t last_write;
+			std::tr1::shared_ptr< workers::worker > owner;
   };
 }
 

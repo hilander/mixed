@@ -32,3 +32,7 @@ add_executable ( pthread-epoller-client pthread-epoller-client.cc )
 target_link_libraries ( pthread-epoller-client libmixed )
 target_link_libraries ( pthread-epoller-client pthread )
 
+add_executable ( scheduler scheduler.cc )
+target_link_libraries ( scheduler libmixed )
+#target_link_libraries ( scheduler pthread )
+

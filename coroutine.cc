@@ -9,7 +9,7 @@ const size_t coroutine::StackSize = 16384;
 
 void runner( coroutine* c )
 {
-  c->go();
+  c->start();
 }
 
 coroutine::coroutine()
@@ -48,4 +48,9 @@ void coroutine::run( ::ucontext_t* return_to )
 void coroutine::yield()
 {
   ::swapcontext( &own_context, return_context );
+}
+
+::ucontext_t* coroutine::get_context()
+{
+	return &own_context;
 }

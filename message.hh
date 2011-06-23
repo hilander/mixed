@@ -26,11 +26,15 @@ namespace message_queues
 
 	struct fiber_message : public message
 	{
+    typedef std::tr1::shared_ptr< fiber_message > ptr;
+
 		fiber_message();
 	};
 
 	struct service_message : public message
 	{
+    typedef std::tr1::shared_ptr< service_message > ptr;
+
 		service_message();
 	};
 }

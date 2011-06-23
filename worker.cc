@@ -6,6 +6,7 @@ using namespace std::tr1;
 using namespace std;
 
 #include "message.hh"
+#include "message_queue.hh"
 using namespace message_queues;
 
 #include "fiber.hh"
@@ -31,7 +32,7 @@ worker::~worker()
 
 void worker::init()
 {
-  sched = scheduler::create();
+  sched = scheduler::create( shared_from_this() );
   io_facility = epoller::create();
 }
 
@@ -47,8 +48,12 @@ void worker::iteration()
 {
   sched->run();
   do_epolls();
-  process_messages();
+  process_incoming_messages();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// I/O
+////////////////////////////////////////////////////////////////////////////////
 
 void worker::do_epolls()
 {
@@ -102,16 +107,54 @@ void worker::block_on_io( int f, fiber::ptr fp, fiber::current_state s )
 	io_facility->add( f );
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// End of I/O
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// Messaging
+////////////////////////////////////////////////////////////////////////////////
+
 void worker::block_on_message( int m_id, fiber::ptr fp )
 {
 	fp->set_state( fiber::BLOCKED_FOR_MESSAGE );
 	blocked_msgs[ m_id ] = fp;
 }
 
-void worker::process_messages()
+void worker::process_incoming_messages()
 {
-  vector< shared_ptr< message > > m;
+	message::ptr mess;
+	while ( pipe.read_for_slave( mess ) )
+	{
+		switch ( mess->m_type )
+		{
+			case message_type::ServiceMessage:
+				process_service_message( mess );
+				break;
+
+			case message_type::FiberMessage:
+				pass_message_to_fiber( mess );
+				break;
+
+			default:
+				break;
+		}
+	}
 }
+
+void worker::process_service_message( message::ptr m )
+{
+	service_message::ptr sm = dynamic_pointer_cast< service_message >( m );
+}
+
+void worker::pass_message_to_fiber( message::ptr m )
+{
+	fiber_message::ptr sm = dynamic_pointer_cast< fiber_message >( m );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// End of Messaging
+////////////////////////////////////////////////////////////////////////////////
 
 bool worker::finished()
 {

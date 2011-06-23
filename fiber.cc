@@ -17,10 +17,11 @@ fiber::~fiber()
 {
 }
 
-void fiber::run( ::ucontext_t* return_to )
+void fiber::start()
 {
-  coroutines::coroutine::run( return_to );
+	go();
   state = FINISHED;
+	yield();
 }
 
 fiber::current_state fiber::get_state()
@@ -46,4 +47,9 @@ void fiber::set_last_read( ssize_t s )
 void fiber::set_last_write( ssize_t s )
 {
 	last_read = s;
+}
+
+void fiber::set_owner( std::tr1::shared_ptr< workers::worker > o )
+{
+	owner = o;
 }

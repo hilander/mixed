@@ -19,11 +19,15 @@ namespace coroutines
 
       virtual void go() = 0;
 
+      virtual void start() = 0;
+
       void run( ::ucontext_t* return_to );
 
       void init();
 
       void yield();
+
+			::ucontext_t* get_context();
 
     private:
       ::ucontext_t own_context;

@@ -10,7 +10,6 @@ class myfiber : public fiber
     virtual void go()
     {
       cout << "myfiber done." << endl;
-      yield();
     }
 };
 

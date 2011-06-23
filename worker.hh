@@ -11,7 +11,7 @@
 
 namespace workers
 {
-  class worker
+  class worker : std::tr1::enable_shared_from_this< worker >
   {
     public:
       typedef std::tr1::shared_ptr< worker > ptr;
@@ -32,7 +32,9 @@ namespace workers
       worker();
 
       void do_epolls();
-      void process_messages();
+      void process_incoming_messages();
+      void process_service_message( message::ptr m );
+      void pass_message_to_fiber( message::ptr m );
       bool finished();
 
       schedulers::scheduler::ptr sched;
