@@ -33,6 +33,8 @@ namespace schedulers
 
 			void set_owner( std::tr1::shared_ptr< workers::worker > o );
 
+			bool has_fiber( fibers::fiber::ptr f );
+
     private:
       scheduler();
 

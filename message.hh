@@ -3,6 +3,8 @@
 
 #include <tr1/memory>
 
+#include "fiber.hh"
+
 namespace message_queues
 {
 	struct message_type
@@ -29,13 +31,28 @@ namespace message_queues
     typedef std::tr1::shared_ptr< fiber_message > ptr;
 
 		fiber_message();
+
+		fibers::fiber::ptr sender;
+
+		fibers::fiber::ptr receiver;
 	};
 
 	struct service_message : public message
 	{
     typedef std::tr1::shared_ptr< service_message > ptr;
 
+		enum available_services
+		{
+			SPAWN,
+			FINISH_WORK
+		};
+
 		service_message();
+
+		available_services service;
+
+		std::tr1::shared_ptr< fibers::fiber > fiber_to_spawn;
 	};
 }
+
 #endif

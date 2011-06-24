@@ -145,11 +145,31 @@ void worker::process_incoming_messages()
 void worker::process_service_message( message::ptr m )
 {
 	service_message::ptr sm = dynamic_pointer_cast< service_message >( m );
+	switch ( sm->service )
+	{
+		case service_message::FINISH_WORK:
+			master_allowed = true;
+			break;
+
+		case service_message::SPAWN:
+			sched->insert( sm->fiber_to_spawn );
+			break;
+	}
 }
 
+// from outside to fiber
 void worker::pass_message_to_fiber( message::ptr m )
 {
-	fiber_message::ptr sm = dynamic_pointer_cast< fiber_message >( m );
+	fiber_message::ptr fm = dynamic_pointer_cast< fiber_message >( m );
+	fiber::ptr f = fm->receiver;
+	if ( sched->has_fiber( f ) )
+	{
+		f->put_into_message_buffer( fm );
+		if ( f->get_state() == fiber::BLOCKED_FOR_MESSAGE )
+		{
+			f->set_state( fiber::READY );
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

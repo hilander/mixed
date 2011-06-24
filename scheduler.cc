@@ -91,3 +91,9 @@ void scheduler::set_owner( std::tr1::shared_ptr< workers::worker > o )
 {
 	owner = o;
 }
+
+bool scheduler::has_fiber( fibers::fiber::ptr f )
+{
+	return find( runners.begin(), runners.end(), f ) != runners.end();
+}
+
