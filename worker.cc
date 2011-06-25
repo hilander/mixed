@@ -44,6 +44,11 @@ void worker::run()
   }
 }
 
+bool worker::finished()
+{
+  return master_allowed && ( sched->workload() == 0 );
+}
+
 void worker::iteration()
 {
   sched->run();
@@ -123,7 +128,7 @@ void worker::block_on_message( int m_id, fiber::ptr fp )
 
 void worker::process_incoming_messages()
 {
-	message::ptr mess;
+	shared_ptr< message > mess;
 	while ( pipe.read_for_slave( mess ) )
 	{
 		switch ( mess->m_type )
@@ -158,9 +163,9 @@ void worker::process_service_message( message::ptr m )
 }
 
 // from outside to fiber
-void worker::pass_message_to_fiber( message::ptr m )
+void worker::pass_message_to_fiber( shared_ptr< message > m )
 {
-	fiber_message::ptr fm = dynamic_pointer_cast< fiber_message >( m );
+	fiber_message::ptr fm( dynamic_pointer_cast< fiber_message >( m ) );
 	fiber::ptr f = fm->receiver;
 	if ( sched->has_fiber( f ) )
 	{
@@ -172,12 +177,16 @@ void worker::pass_message_to_fiber( message::ptr m )
 	}
 }
 
+void worker::send_message( int m_id, std::tr1::shared_ptr< message_queues::fiber_message > m )
+{
+	if ( sched->has_fiber( m->receiver ) )
+	{
+		message::ptr mm( dynamic_pointer_cast< message >( m ) );
+		pass_message_to_fiber( mm );
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // End of Messaging
 ////////////////////////////////////////////////////////////////////////////////
-
-bool worker::finished()
-{
-  return true;
-}
 

@@ -28,13 +28,16 @@ namespace workers
 
 			void block_on_message( int m_id, fibers::fiber::ptr fp );
 
+			void send_message( int m_id, std::tr1::shared_ptr< message_queues::fiber_message > m );
+
     private:
       worker();
 
       void do_epolls();
+
       void process_incoming_messages();
       void process_service_message( message::ptr m );
-      void pass_message_to_fiber( message::ptr m );
+      void pass_message_to_fiber( std::tr1::shared_ptr< message_queues::message > m );
       bool finished();
 
       schedulers::scheduler::ptr sched;

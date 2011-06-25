@@ -5,8 +5,10 @@ using namespace std::tr1;
 using namespace std;
 
 #include "fiber.hh"
-
 using namespace fibers;
+
+#include "message.hh"
+using namespace message_queues;
 
 fiber::fiber()
 : state( READY )
@@ -52,4 +54,9 @@ void fiber::set_last_write( ssize_t s )
 void fiber::set_owner( std::tr1::shared_ptr< workers::worker > o )
 {
 	owner = o;
+}
+
+void fiber::put_into_message_buffer( shared_ptr< fiber_message > m )
+{
+	message_buffer.push_back( m );
 }

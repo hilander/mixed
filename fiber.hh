@@ -3,8 +3,14 @@
 
 #include <tr1/memory>
 #include <vector>
+#include <list>
 
 #include "coroutine.hh"
+
+namespace message_queues
+{
+	struct fiber_message;
+}
 
 namespace workers
 {
@@ -48,6 +54,12 @@ namespace fibers
 			void set_last_write( ssize_t s );
 
 			void set_owner( std::tr1::shared_ptr< workers::worker > o );
+
+			void put_into_message_buffer( std::tr1::shared_ptr< message_queues::fiber_message > m );
+
+		protected:
+
+			std::list< std::tr1::shared_ptr< message_queues::fiber_message > > message_buffer;
 
     private:
       current_state state;
