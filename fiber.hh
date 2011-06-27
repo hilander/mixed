@@ -43,6 +43,11 @@ namespace fibers
 
       virtual void start();
 
+			ssize_t do_read( int f );
+
+			ssize_t do_write( int f );
+
+			// always non-blocking
 			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
 			std::tr1::shared_ptr< message_queues::fiber_message > receive_message();

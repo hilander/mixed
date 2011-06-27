@@ -120,10 +120,9 @@ void worker::block_on_io( int f, fiber::ptr fp, fiber::current_state s )
 // Messaging
 ////////////////////////////////////////////////////////////////////////////////
 
-void worker::block_on_message( int m_id, fiber::ptr fp )
+void worker::block_on_message( fiber::ptr fp )
 {
 	fp->set_state( fiber::BLOCKED_FOR_MESSAGE );
-	blocked_msgs[ m_id ] = fp;
 }
 
 void worker::process_incoming_messages()
