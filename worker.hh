@@ -28,7 +28,7 @@ namespace workers
 
 			void block_on_message( int m_id, fibers::fiber::ptr fp );
 
-			void send_message( int m_id, std::tr1::shared_ptr< message_queues::fiber_message > m );
+			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
     private:
       worker();

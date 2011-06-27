@@ -43,6 +43,13 @@ namespace fibers
 
       virtual void start();
 
+			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
+
+			std::tr1::shared_ptr< message_queues::fiber_message > receive_message();
+			std::tr1::shared_ptr< message_queues::fiber_message > receive_message_nonblock();
+
+			// methods used by other components, not for normal user
+
       current_state get_state();
 
 			void set_state( current_state s );

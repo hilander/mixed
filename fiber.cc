@@ -26,6 +26,22 @@ void fiber::start()
 	yield();
 }
 
+void fiber::send_message( fiber_message::ptr m )
+{
+}
+
+fiber_message::ptr fiber::receive_message()
+{
+	fiber_message::ptr p;
+	return p;
+}
+
+fiber_message::ptr fiber::receive_message_nonblock()
+{
+	fiber_message::ptr p;
+	return p;
+}
+
 fiber::current_state fiber::get_state()
 {
   return state;
