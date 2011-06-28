@@ -30,9 +30,15 @@ worker::~worker()
 {
 }
 
+worker::ptr worker::create()
+{
+	worker::ptr p( new worker() );
+	p->init();
+	return p;
+}
 void worker::init()
 {
-  sched = scheduler::create( shared_from_this() );
+  sched = scheduler::create( shared_ptr< worker >( this ) );
   io_facility = epoller::create();
 }
 
@@ -54,6 +60,11 @@ void worker::iteration()
   sched->run();
   do_epolls();
   process_incoming_messages();
+}
+
+int worker::workload()
+{
+	return sched->workload();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -204,6 +215,16 @@ void worker::send_message( std::tr1::shared_ptr< message_queues::fiber_message >
 		message::ptr mp = dynamic_pointer_cast< message >( mm );
 		pipe.write_to_master( mp );
 	}
+}
+
+void worker::read_for_master( std::tr1::shared_ptr< message_queues::message >& m )
+{
+	pipe.read_for_master( m );
+}
+
+void worker::write_to_slave( std::tr1::shared_ptr< message_queues::message >& m )
+{
+	pipe.write_to_slave( m );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

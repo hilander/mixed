@@ -35,7 +35,7 @@ set ( LIBMIXED_SOURCES
 #  scheduler_tools.cpp
   scheduler.cc
   worker.cc
-#  scheduler_tools.cpp
+  master.cc
   "message.cc"
   message_queue.cc
   epoller.cc

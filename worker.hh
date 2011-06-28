@@ -9,12 +9,19 @@
 #include "message_queue.hh"
 #include "epoller.hh"
 
+namespace masters
+{
+	class master;
+}
+
 namespace workers
 {
-  class worker : std::tr1::enable_shared_from_this< worker >
+  class worker
   {
     public:
       typedef std::tr1::shared_ptr< worker > ptr;
+
+			static ptr create();
 
       virtual ~worker();
 
@@ -29,6 +36,12 @@ namespace workers
 			void block_on_message( fibers::fiber::ptr fp );
 
 			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
+
+			void read_for_master( std::tr1::shared_ptr< message_queues::message >& m );
+
+			void write_to_slave( std::tr1::shared_ptr< message_queues::message >& m );
+
+			int workload();
 
     private:
       worker();
