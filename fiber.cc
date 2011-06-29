@@ -66,6 +66,11 @@ fiber_message::ptr fiber::receive_message_nonblock()
 	return p;
 }
 
+void fiber::spawn( ptr f )
+{
+	owner->spawn( f );
+}
+
 fiber::current_state fiber::get_state()
 {
   return state;

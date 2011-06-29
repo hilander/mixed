@@ -172,6 +172,7 @@ void worker::process_service_message( message::ptr m )
 					= dynamic_pointer_cast< serv_message< service_message::SPAWN > >( m ); // I love c++ ;>
 
 				sched->insert( ssm->fiber_to_spawn );
+				serv_message< service_message::SPAWN_REPLY >::ptr reply( new serv_message< service_message::SPAWN_REPLY >() );
 			}
 			break;
 
@@ -182,6 +183,9 @@ void worker::process_service_message( message::ptr m )
 
 				pass_message_to_fiber( ssm->fiber_data );
 			}
+			break;
+
+		default:
 			break;
 	}
 }
@@ -215,6 +219,14 @@ void worker::send_message( std::tr1::shared_ptr< message_queues::fiber_message >
 		message::ptr mp = dynamic_pointer_cast< message >( mm );
 		pipe.write_to_master( mp );
 	}
+}
+
+void worker::spawn( fiber::ptr f )
+{
+	serv_message< service_message::SPAWN >::ptr m( new serv_message< service_message::SPAWN >() );
+	message::ptr sm = dynamic_pointer_cast< message >( m );
+	m->fiber_to_spawn = f;
+	pipe.write_to_master( sm );
 }
 
 void worker::read_for_master( std::tr1::shared_ptr< message_queues::message >& m )

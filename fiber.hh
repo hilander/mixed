@@ -53,6 +53,8 @@ namespace fibers
 			std::tr1::shared_ptr< message_queues::fiber_message > receive_message();
 			std::tr1::shared_ptr< message_queues::fiber_message > receive_message_nonblock();
 
+			void spawn( ptr f );
+
 			// methods used by other components, not for normal user
 
       current_state get_state();

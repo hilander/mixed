@@ -28,6 +28,8 @@ namespace masters
 			std::tr1::shared_ptr< workers::worker > own_slave;
 
 			vector< std::tr1::shared_ptr< workers::worker > > slaves;
+
+			int workload;
 	};
 }
 

@@ -30,6 +30,15 @@ void master::run()
 void master::init()
 {
 	own_slave = worker::create();
+
+	cpu_set_t cs;
+	if ( sched_getaffinity(0, sizeof(cs), &cs) == 0 )
+	{
+		for ( int free_cores = 0; free_cores < ( CPU_COUNT( &cs ) ) - 1; free_cores++ )
+		{
+			slaves.push_back( worker::create() );
+		}
+	}
 }
 
 worker::ptr master::get_worker_with_smallest_workload()
@@ -63,6 +72,7 @@ void master::spawn( fiber::ptr f )
 }
 
 master::master()
+: workload( 0 )
 {
 }
 
