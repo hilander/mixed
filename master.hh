@@ -23,6 +23,9 @@ namespace masters
 		private:
 			master();
 
+			void read_from_slave( workers::worker::ptr s );
+			void read_messages();
+
 			std::tr1::shared_ptr< workers::worker > get_worker_with_smallest_workload();
 
 			std::tr1::shared_ptr< workers::worker > own_slave;

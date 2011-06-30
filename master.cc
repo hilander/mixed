@@ -1,3 +1,5 @@
+#include <pthread.h>
+
 #include <tr1/memory>
 using namespace std::tr1;
 
@@ -16,6 +18,11 @@ using namespace workers;
 #include "master.hh"
 using namespace masters;
 
+void* worker_pthread_starter( worker* w )
+{
+	return 0;
+}
+
 master::ptr master::create()
 {
 	master::ptr p( new master() );
@@ -25,6 +32,11 @@ master::ptr master::create()
 
 void master::run()
 {
+	while ( ! its_time_to_end() )
+	{
+		read_messages();
+		own_slave->iteration();
+	}
 }
 
 void master::init()
@@ -36,7 +48,13 @@ void master::init()
 	{
 		for ( int free_cores = 0; free_cores < ( CPU_COUNT( &cs ) ) - 1; free_cores++ )
 		{
-			slaves.push_back( worker::create() );
+			worker::ptr w = worker::create();
+			slaves.push_back( w );
+			::pthread_t pt;
+			::pthread_create( &pt
+											, 0
+											, reinterpret_cast< void*(*)(void*) >( &worker_pthread_starter )
+											, reinterpret_cast< void* >( w.get() ) );
 		}
 	}
 }
@@ -69,6 +87,66 @@ void master::spawn( fiber::ptr f )
 	worker::ptr s = get_worker_with_smallest_workload();
 	message::ptr m = dynamic_pointer_cast< message >( p );
 	s->write_to_slave( m );
+	workload++;
+}
+
+void master::read_from_slave( worker::ptr s )
+{
+	message::ptr m;
+
+	while ( s->read_for_master( m ) )
+	{
+		service_message::ptr sm = dynamic_pointer_cast< service_message >( m );
+		switch ( sm->service )
+		{
+			case service_message::SPAWN:
+				{
+					serv_message< service_message::SPAWN >::ptr spm = dynamic_pointer_cast< serv_message< service_message::SPAWN > >( sm );
+					fiber::ptr fp = spm->fiber_to_spawn;
+					spawn( fp );
+					break;
+				}
+
+			case service_message::SPAWN_REPLY:
+				workload--;
+				break;
+
+			case service_message::BROADCAST_MESSAGE:
+				{
+					own_slave->write_to_slave( m );
+					vector< worker::ptr >::iterator si = slaves.begin();
+					for (
+							; si != slaves.end()
+							; si++ )
+					{
+						worker::ptr sl = *si;
+						if ( sl.get() != 0 )
+						{
+							sl->write_to_slave( m );
+						}
+					}
+					break;
+				}
+
+			case service_message::FINISH_WORK:
+				break;
+		}
+	}
+}
+
+void master::read_messages()
+{
+	vector< worker::ptr >::iterator sli = slaves.begin();
+	for (
+			; sli != slaves.end()
+			; sli++ )
+	{
+		worker::ptr sl = *sli;
+		if ( sl.get() != 0 )
+		{
+			read_from_slave( sl );
+		}
+	}
 }
 
 master::master()

@@ -47,7 +47,6 @@ namespace fibers
 
 			ssize_t do_write( int f );
 
-			// always non-blocking
 			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
 			std::tr1::shared_ptr< message_queues::fiber_message > receive_message();

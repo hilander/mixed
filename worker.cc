@@ -172,7 +172,9 @@ void worker::process_service_message( message::ptr m )
 					= dynamic_pointer_cast< serv_message< service_message::SPAWN > >( m ); // I love c++ ;>
 
 				sched->insert( ssm->fiber_to_spawn );
-				serv_message< service_message::SPAWN_REPLY >::ptr reply( new serv_message< service_message::SPAWN_REPLY >() );
+				serv_message< service_message::SPAWN_REPLY >::ptr r( new serv_message< service_message::SPAWN_REPLY >() );
+				message::ptr reply = dynamic_pointer_cast< message >( r );
+				pipe.write_to_master( reply );
 			}
 			break;
 
@@ -229,9 +231,9 @@ void worker::spawn( fiber::ptr f )
 	pipe.write_to_master( sm );
 }
 
-void worker::read_for_master( std::tr1::shared_ptr< message_queues::message >& m )
+bool worker::read_for_master( std::tr1::shared_ptr< message_queues::message >& m )
 {
-	pipe.read_for_master( m );
+	return pipe.read_for_master( m );
 }
 
 void worker::write_to_slave( std::tr1::shared_ptr< message_queues::message >& m )

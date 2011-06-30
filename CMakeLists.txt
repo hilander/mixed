@@ -43,5 +43,6 @@ set ( LIBMIXED_SOURCES
   )
 
 add_library ( libmixed SHARED ${LIBMIXED_SOURCES} )
+target_link_libraries ( libmixed pthread )
 
 add_subdirectory ( ${PROJECT_SOURCE_DIR}/test )
