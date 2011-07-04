@@ -36,3 +36,7 @@ add_executable ( scheduler scheduler.cc )
 target_link_libraries ( scheduler libmixed )
 #target_link_libraries ( scheduler pthread )
 
+add_executable ( fiber-messaging fiber-messaging.cc )
+target_link_libraries ( fiber-messaging libmixed )
+target_link_libraries ( fiber-messaging pthread )
+

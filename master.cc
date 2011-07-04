@@ -30,6 +30,25 @@ master::ptr master::create()
 	return p;
 }
 
+bool master::its_time_to_end()
+{
+	int total_workload = own_slave->workload();
+
+	vector< worker::ptr >::iterator vi = slaves.begin();
+	for (
+			; vi != slaves.end()
+			; vi++ )
+	{
+		if ( vi->get() != 0 )
+		{
+			worker::ptr tp = *vi;
+			total_workload += tp->workload();
+		}
+	}
+
+	return total_workload == 0;
+}
+
 void master::run()
 {
 	while ( ! its_time_to_end() )

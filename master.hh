@@ -23,6 +23,8 @@ namespace masters
 		private:
 			master();
 
+			bool its_time_to_end();
+
 			void read_from_slave( workers::worker::ptr s );
 			void read_messages();
 
