@@ -4,6 +4,7 @@
 #include <tr1/memory>
 
 #include "fiber.hh"
+#include "worker.hh"
 
 namespace masters
 {

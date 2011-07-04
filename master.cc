@@ -25,14 +25,16 @@ void* worker_pthread_starter( worker* w )
 
 master::ptr master::create()
 {
-	master::ptr p( new master() );
+	master* p = new master();
 	p->init();
-	return p;
+	return master::ptr( p );
 }
 
+//#include <iostream>
+//using namespace std;
 bool master::its_time_to_end()
 {
-	int total_workload = own_slave->workload();
+	int total_workload = own_slave->workload() + workload;
 
 	vector< worker::ptr >::iterator vi = slaves.begin();
 	for (
@@ -46,6 +48,7 @@ bool master::its_time_to_end()
 		}
 	}
 
+//	cout << "total workload: " << total_workload << endl;
 	return total_workload == 0;
 }
 
@@ -166,6 +169,7 @@ void master::read_messages()
 			read_from_slave( sl );
 		}
 	}
+	read_from_slave( own_slave );
 }
 
 master::master()

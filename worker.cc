@@ -32,9 +32,9 @@ worker::~worker()
 
 worker::ptr worker::create()
 {
-	worker::ptr p( new worker() );
+	worker* p = new worker();
 	p->init();
-	return p;
+	return worker::ptr( p );
 }
 void worker::init()
 {
@@ -157,6 +157,8 @@ void worker::process_incoming_messages()
 	}
 }
 
+#include <iostream>
+using namespace std;
 void worker::process_service_message( message::ptr m )
 {
 	service_message::ptr sm = dynamic_pointer_cast< service_message >( m );
@@ -175,6 +177,7 @@ void worker::process_service_message( message::ptr m )
 				serv_message< service_message::SPAWN_REPLY >::ptr r( new serv_message< service_message::SPAWN_REPLY >() );
 				message::ptr reply = dynamic_pointer_cast< message >( r );
 				pipe.write_to_master( reply );
+	cout << "write_to_master done" << endl;
 			}
 			break;
 
