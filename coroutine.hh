@@ -6,7 +6,7 @@
 
 namespace coroutines
 {
-  class coroutine : public std::tr1::enable_shared_from_this< coroutine >
+  class coroutine
   {
     public:
       typedef std::tr1::shared_ptr< coroutine > ptr;

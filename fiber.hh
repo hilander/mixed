@@ -19,7 +19,7 @@ namespace workers
 
 namespace fibers
 {
-  class fiber : public coroutines::coroutine
+  class fiber : public std::tr1::enable_shared_from_this< fiber >, public coroutines::coroutine
   {
     public:
     typedef std::tr1::shared_ptr< fiber > ptr;
