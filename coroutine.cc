@@ -1,6 +1,7 @@
 #include <ucontext.h>
 #include <stdlib.h>
 #include "coroutine.hh"
+	#include <valgrind/valgrind.h>
 
 using namespace coroutines;
 using std::tr1::shared_ptr;
@@ -32,6 +33,7 @@ void coroutine::init()
     throw bad_getcontext();
   }
   own_context.uc_stack.ss_sp = ::malloc( StackSize ); // no valgrind warnings
+  VALGRIND_STACK_REGISTER(own_context.uc_stack.ss_sp, (void*)((long)(own_context.uc_stack.ss_sp)+StackSize)); 
   own_context.uc_stack.ss_size = StackSize;
   own_context.uc_link = 0;
   ::makecontext( &own_context, ( void(*)() )( &runner ), 1, this );

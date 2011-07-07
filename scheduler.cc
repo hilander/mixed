@@ -82,8 +82,14 @@ bool fiber_finished_work( fiber::ptr f )
 	return f->get_state() == fiber::FINISHED;
 }
 
+#include <iostream>
+using namespace std;
 void scheduler::remove_finished()
 {
+    if ( runners.size() > 0 ) 
+    {
+        cout << "scheduler: " << runners.size() << endl;
+    }
 	runners.remove_if( &fiber_finished_work );
 }
 

@@ -30,11 +30,11 @@ worker::~worker()
 {
 }
 
-worker::ptr worker::create()
+worker* worker::create()
 {
 	worker* p = new worker();
 	p->init();
-	return worker::ptr( p );
+	return p;
 }
 void worker::init()
 {
@@ -159,7 +159,7 @@ void worker::process_incoming_messages()
 
 #include <iostream>
 using namespace std;
-void worker::process_service_message( message::ptr m )
+void worker::process_service_message( message::ptr& m )
 {
 	service_message::ptr sm = dynamic_pointer_cast< service_message >( m );
 	switch ( sm->service )
@@ -170,14 +170,14 @@ void worker::process_service_message( message::ptr m )
 
 		case service_message::SPAWN:
 			{
-				serv_message< service_message::SPAWN >::ptr ssm 
-					= dynamic_pointer_cast< serv_message< service_message::SPAWN > >( m ); // I love c++ ;>
+				serv_message< service_message::SPAWN >::ptr ssm( dynamic_pointer_cast< serv_message< service_message::SPAWN > >( m ) ); // I love c++ ;>
 
 				sched->insert( ssm->fiber_to_spawn );
 				serv_message< service_message::SPAWN_REPLY >::ptr r( new serv_message< service_message::SPAWN_REPLY >() );
 				message::ptr reply = dynamic_pointer_cast< message >( r );
+                reply->m_type = service_message::SPAWN_REPLY;
 				pipe.write_to_master( reply );
-	cout << "write_to_master done" << endl;
+	cout << this << ": write_to_master done" << ", size: " << workload() << endl;
 			}
 			break;
 
@@ -196,7 +196,7 @@ void worker::process_service_message( message::ptr m )
 }
 
 // from outside to fiber
-void worker::pass_message_to_fiber( shared_ptr< message > m )
+void worker::pass_message_to_fiber( shared_ptr< message >& m )
 {
 	fiber_message::ptr fm( dynamic_pointer_cast< fiber_message >( m ) );
 	fiber::ptr f = fm->receiver;

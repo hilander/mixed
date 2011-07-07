@@ -13,7 +13,7 @@ namespace masters
 		public:
 			typedef std::tr1::shared_ptr< master > ptr;
 
-			static ptr create();
+			static master* create();
 
 			void run();
 

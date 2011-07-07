@@ -50,13 +50,22 @@ void fiber::send_message( fiber_message::ptr m )
 	owner->send_message( m );
 }
 
-fiber_message::ptr fiber::receive_message()
+#include <iostream>
+using namespace std;
+void fiber::receive_message( fiber_message::ptr& p )
 {
-	owner->block_on_message( shared_ptr< fiber >( this ) );
+    owner->block_on_message( shared_ptr< fiber >( this ) );
 	yield();
-	fiber_message::ptr p = message_buffer.front();
+    if ( message_buffer.empty() )
+    {
+        throw exception();
+    }
+    else
+    {
+        cout << "fiber::receive(): message_buffer.size(): " << message_buffer.size() << endl;
+    }
+	p = message_buffer.front();
 	message_buffer.pop_front();
-	return p;
 }
 
 fiber_message::ptr fiber::receive_message_nonblock()

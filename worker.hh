@@ -21,7 +21,7 @@ namespace workers
     public:
       typedef std::tr1::shared_ptr< worker > ptr;
 
-			static ptr create();
+			static worker* create();
 
       virtual ~worker();
 
@@ -51,8 +51,8 @@ namespace workers
       void do_epolls();
 
       void process_incoming_messages();
-      void process_service_message( message::ptr m );
-      void pass_message_to_fiber( std::tr1::shared_ptr< message_queues::message > m );
+      void process_service_message( message::ptr& m );
+      void pass_message_to_fiber( std::tr1::shared_ptr< message_queues::message >& m );
       bool finished();
 
       schedulers::scheduler::ptr sched;

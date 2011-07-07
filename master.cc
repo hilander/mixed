@@ -23,15 +23,15 @@ void* worker_pthread_starter( worker* w )
 	return 0;
 }
 
-master::ptr master::create()
+master* master::create()
 {
 	master* p = new master();
 	p->init();
-	return master::ptr( p );
+	return p;
 }
 
-//#include <iostream>
-//using namespace std;
+#include <iostream>
+using namespace std;
 bool master::its_time_to_end()
 {
 	int total_workload = own_slave->workload() + workload;
@@ -63,20 +63,20 @@ void master::run()
 
 void master::init()
 {
-	own_slave = worker::create();
+	own_slave.reset( worker::create() );
 
 	cpu_set_t cs;
 	if ( sched_getaffinity(0, sizeof(cs), &cs) == 0 )
 	{
 		for ( int free_cores = 0; free_cores < ( CPU_COUNT( &cs ) ) - 1; free_cores++ )
 		{
-			worker::ptr w = worker::create();
+			worker::ptr w( worker::create() );
 			slaves.push_back( w );
 			::pthread_t pt;
 			::pthread_create( &pt
-											, 0
-											, reinterpret_cast< void*(*)(void*) >( &worker_pthread_starter )
-											, reinterpret_cast< void* >( w.get() ) );
+                            , 0
+                            , reinterpret_cast< void*(*)(void*) >( &worker_pthread_starter )
+                            , reinterpret_cast< void* >( w.get() ) );
 		}
 	}
 }
@@ -102,6 +102,8 @@ worker::ptr master::get_worker_with_smallest_workload()
 	return sp;
 }
 
+#include <iostream>
+using namespace std;
 void master::spawn( fiber::ptr f )
 {
 	serv_message< service_message::SPAWN >::ptr p( new serv_message< service_message::SPAWN >() );
@@ -110,6 +112,7 @@ void master::spawn( fiber::ptr f )
 	message::ptr m = dynamic_pointer_cast< message >( p );
 	s->write_to_slave( m );
 	workload++;
+    cout << "write_to_slave done" << endl;
 }
 
 void master::read_from_slave( worker::ptr s )
@@ -124,17 +127,24 @@ void master::read_from_slave( worker::ptr s )
 			case service_message::SPAWN:
 				{
 					serv_message< service_message::SPAWN >::ptr spm = dynamic_pointer_cast< serv_message< service_message::SPAWN > >( sm );
-					fiber::ptr fp = spm->fiber_to_spawn;
-					spawn( fp );
+                    if ( spm.get() != 0 )
+                    {
+                        fiber::ptr fp = spm->fiber_to_spawn;
+                        spawn( fp );
+                    }
+                    cout << "master: SPAWN" << workload << endl;
+				workload--;
 					break;
 				}
 
 			case service_message::SPAWN_REPLY:
 				workload--;
+                    cout << "master: SPAWN_REPLY" << endl;
 				break;
 
 			case service_message::BROADCAST_MESSAGE:
 				{
+                    cout << "master: BROADCAST_MESSAGE" << endl;
 					own_slave->write_to_slave( m );
 					vector< worker::ptr >::iterator si = slaves.begin();
 					for (

@@ -49,7 +49,7 @@ namespace fibers
 
 			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
-			std::tr1::shared_ptr< message_queues::fiber_message > receive_message();
+			void receive_message( std::tr1::shared_ptr< message_queues::fiber_message >& p);
 			std::tr1::shared_ptr< message_queues::fiber_message > receive_message_nonblock();
 
 			void spawn( ptr f );
