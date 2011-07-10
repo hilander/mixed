@@ -31,6 +31,7 @@ namespace fibers
       BLOCKED,
 			BLOCKED_FOR_READ,
 			BLOCKED_FOR_WRITE,
+			BLOCKED_FOR_ACCEPT,
 			BLOCKED_FOR_MESSAGE
     };
 
@@ -43,9 +44,11 @@ namespace fibers
 
       virtual void start();
 
-			ssize_t do_read( int f );
+			ssize_t do_read( int f, ssize_t s );
 
-			ssize_t do_write( int f );
+			ssize_t do_write( int f, ssize_t s );
+
+			int do_accept( int f );
 
 			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
@@ -62,6 +65,10 @@ namespace fibers
 
 			std::tr1::shared_ptr< std::vector< char > > get_buffer();
 
+			ssize_t get_rw_size();
+
+			void set_last_accepted_fd( int f );
+
 			void set_last_read( ssize_t s );
 
 			void set_last_write( ssize_t s );
@@ -77,8 +84,10 @@ namespace fibers
     private:
       current_state state;
 			std::tr1::shared_ptr< std::vector< char > > rw_buffer;
+			ssize_t rw_size;
 			ssize_t last_read;
 			ssize_t last_write;
+			int last_accepted_fd;
 			std::tr1::shared_ptr< workers::worker > owner;
   };
 }

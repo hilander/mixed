@@ -16,6 +16,7 @@ using namespace workers;
 fiber::fiber()
 : state( READY )
 {
+	rw_buffer.reset( new vector< char >() );
 }
 
 fiber::~fiber()
@@ -29,20 +30,29 @@ void fiber::start()
 	yield();
 }
 
-ssize_t fiber::do_read( int f )
+ssize_t fiber::do_read( int f, ssize_t s )
 {
-	set_last_read( 0 );
+	last_read = -1;
+	rw_size = s;
 	owner->block_on_io( f, shared_from_this(), BLOCKED_FOR_READ );
 	yield();
 	return last_read;
 }
 
-ssize_t fiber::do_write( int f )
+ssize_t fiber::do_write( int f, ssize_t s )
 {
-	set_last_write( 0 );
+	rw_size = s;
+	last_read = -1;
 	owner->block_on_io( f, shared_from_this(), BLOCKED_FOR_WRITE );
 	yield();
 	return last_write;
+}
+
+int fiber::do_accept( int f )
+{
+	owner->block_on_io( f, shared_from_this(), BLOCKED_FOR_ACCEPT );
+	yield();
+	return last_accepted_fd;
 }
 
 void fiber::send_message( fiber_message::ptr m )
@@ -50,8 +60,8 @@ void fiber::send_message( fiber_message::ptr m )
 	owner->send_message( m );
 }
 
-#include <iostream>
-using namespace std;
+//#include <iostream>
+//using namespace std;
 void fiber::receive_message( fiber_message::ptr& p )
 {
     owner->block_on_message( shared_from_this() );
@@ -60,10 +70,12 @@ void fiber::receive_message( fiber_message::ptr& p )
     {
         throw exception();
     }
+		/*
     else
     {
         cout << "fiber::receive(): message_buffer.size(): " << message_buffer.size() << endl;
     }
+		*/
 	p = message_buffer.front();
 	message_buffer.pop_front();
 }
@@ -93,6 +105,16 @@ void fiber::set_state( fiber::current_state s )
 shared_ptr< vector< char > > fiber::get_buffer()
 {
 	return rw_buffer;
+}
+
+ssize_t fiber::get_rw_size()
+{
+	return rw_size;
+}
+
+void fiber::set_last_accepted_fd( int f )
+{
+	last_accepted_fd = f;
 }
 
 void fiber::set_last_read( ssize_t s )

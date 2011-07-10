@@ -40,3 +40,7 @@ add_executable ( fiber-messaging fiber-messaging.cc )
 target_link_libraries ( fiber-messaging libmixed )
 target_link_libraries ( fiber-messaging pthread )
 
+add_executable ( fiber-server fiber-server.cc )
+target_link_libraries ( fiber-server libmixed )
+target_link_libraries ( fiber-server pthread )
+

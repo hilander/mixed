@@ -28,6 +28,7 @@ include_directories ( ${PROJECT_INC_DIR} )
 # Main library
 set ( LIBMIXED_SOURCES
   coroutine.cc
+  epoller.cc
 #  factory.cpp
 #  specialize.cpp
   fiber.cc
@@ -38,7 +39,6 @@ set ( LIBMIXED_SOURCES
   master.cc
   "message.cc"
   message_queue.cc
-  epoller.cc
 #	mutex_trylock.cpp
   )
 

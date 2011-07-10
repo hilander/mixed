@@ -20,17 +20,20 @@ namespace epollers
 
 			virtual ~epoller();
 
-      const std::vector< std::tr1::shared_ptr< ::epoll_event > > do_epolls( int& how_many );
+      int do_epolls();
 
 			void add( int f );
 
 			void del( int f );
 
 			void init();
+
+			::epoll_event* get_last_epoll_result();
+
     private:
-      std::vector< std::tr1::shared_ptr< ::epoll_event > > events;
-      std::vector< ::epoll_event > raw_events;
-      std::map< int, std::tr1::weak_ptr< ::epoll_event > > fds;
+			::epoll_event* raw_events;
+			int rawevents_size;
+      int fds;
 			int own_fd;
   };
 }

@@ -64,6 +64,7 @@ void master::run()
 void master::init()
 {
 	own_slave.reset( worker::create() );
+	own_slave->set_master( this );
 
 	cpu_set_t cs;
 	if ( sched_getaffinity(0, sizeof(cs), &cs) == 0 )
@@ -71,6 +72,7 @@ void master::init()
 		for ( int free_cores = 0; free_cores < ( CPU_COUNT( &cs ) ) - 1; free_cores++ )
 		{
 			worker::ptr w( worker::create() );
+			w->set_master( this );
 			slaves.push_back( w );
 			::pthread_t pt;
 			::pthread_create( &pt
@@ -106,13 +108,14 @@ worker::ptr master::get_worker_with_smallest_workload()
 using namespace std;
 void master::spawn( fiber::ptr f )
 {
-	serv_message< service_message::SPAWN >::ptr p( new serv_message< service_message::SPAWN >() );
+	serv_message< service_message::SPAWN >::ptr p;
+	p.reset( new serv_message< service_message::SPAWN >() );
 	p->fiber_to_spawn = f;
 	worker::ptr s = get_worker_with_smallest_workload();
 	message::ptr m = dynamic_pointer_cast< message >( p );
 	s->write_to_slave( m );
 	workload++;
-    cout << "write_to_slave done" << endl;
+	cout << "write_to_slave done" << endl;
 }
 
 void master::read_from_slave( worker::ptr s )
@@ -132,7 +135,7 @@ void master::read_from_slave( worker::ptr s )
                         fiber::ptr fp = spm->fiber_to_spawn;
                         spawn( fp );
                     }
-                    cout << "master: SPAWN" << workload << endl;
+                    cout << "master: SPAWN. Size = " << workload << endl;
 				workload--;
 					break;
 				}

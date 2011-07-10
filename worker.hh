@@ -45,6 +45,8 @@ namespace workers
 
 			int workload();
 
+			void set_master( masters::master* m );
+
     private:
       worker();
 
@@ -61,6 +63,7 @@ namespace workers
 
 			std::map< int, fibers::fiber::ptr > blocked_fds;
 			std::map< int, fibers::fiber::ptr > blocked_msgs;
+			masters::master* my_master;
 
       bool master_allowed;
   };
