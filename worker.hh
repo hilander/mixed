@@ -37,7 +37,7 @@ namespace workers
 
 			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
-			void spawn( fibers::fiber::ptr f );
+			void spawn( fibers::fiber::ptr& f );
 
 			bool read_for_master( std::tr1::shared_ptr< message_queues::message >& m );
 
@@ -52,13 +52,13 @@ namespace workers
 
       void do_epolls();
 
-      void process_incoming_messages();
-      void process_service_message( message::ptr& m );
+      void process_incoming_message_queues();
+      void process_service_message( message_queues::message::ptr& m );
       void pass_message_to_fiber( std::tr1::shared_ptr< message_queues::message >& m );
       bool finished();
 
       schedulers::scheduler::ptr sched;
-      message_queues::message_queue pipe;
+      message_queues::message_queue::ptr pipe;
       epollers::epoller::ptr io_facility;
 
 			std::map< int, fibers::fiber::ptr > blocked_fds;

@@ -87,9 +87,10 @@ fiber_message::ptr fiber::receive_message_nonblock()
 	return p;
 }
 
-void fiber::spawn( ptr f )
+void fiber::spawn( ptr& f )
 {
 	owner->spawn( f );
+	yield();
 }
 
 fiber::current_state fiber::get_state()
@@ -100,11 +101,6 @@ fiber::current_state fiber::get_state()
 void fiber::set_state( fiber::current_state s )
 {
   state = s;
-}
-
-shared_ptr< vector< char > > fiber::get_buffer()
-{
-	return rw_buffer;
 }
 
 ssize_t fiber::get_rw_size()
@@ -135,4 +131,9 @@ void fiber::set_owner( std::tr1::shared_ptr< workers::worker > o )
 void fiber::put_into_message_buffer( shared_ptr< fiber_message > m )
 {
 	message_buffer.push_back( m );
+}
+
+void fiber::put_into_rw_buffer( char* b, ssize_t s )
+{
+	copy( &b[0], &b[s], rw_buffer->begin() ); 
 }

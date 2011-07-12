@@ -9,6 +9,8 @@ using namespace std::tr1;
 using namespace std;
 
 #include "message.hh"
+using namespace message_queues;
+
 #include "message_queue.hh"
 using namespace message_queues;
 
@@ -45,14 +47,18 @@ void worker::init()
 {
   sched = scheduler::create( shared_ptr< worker >( this ) );
   io_facility = epoller::create();
+	pipe.reset( new message_queue() );
 }
 
+#include <iostream>
+using namespace std;
 void worker::run()
 {
   while ( !finished() )
   {
     iteration();
   }
+	cout << "worker: done" << endl;
 }
 
 bool worker::finished()
@@ -62,9 +68,9 @@ bool worker::finished()
 
 void worker::iteration()
 {
+  process_incoming_message_queues();
   sched->run();
   do_epolls();
-  process_incoming_messages();
 }
 
 int worker::workload()
@@ -100,21 +106,35 @@ void worker::do_epolls()
 				case fiber::BLOCKED_FOR_READ:
 					if ( wev.events & EPOLLIN )
 					{
-						buf = f->get_buffer();
-						f->set_last_read( ::read( fib->first, buf.get(), buf->size() ) );
+						ssize_t ss = f->get_rw_size();
+						char* buf = new char[ ss ];
+						ssize_t read_res = ::read( fib->first, buf, ss );
+						f->set_last_read( read_res );
+						if ( read_res > 0 )
+						{
+							f->put_into_rw_buffer( buf, read_res );
+						}
 						f->set_state( fiber::READY );
 						blocked_fds.erase( fib );
+						delete[] buf;
 					}
 					break;
 
 				case fiber::BLOCKED_FOR_WRITE:
 					if ( wev.events & EPOLLOUT )
 					{
-						buf = f->get_buffer();
-						f->set_last_write( ::write( fib->first, buf.get(), buf->size() ) );
+						ssize_t ss = fib->second->get_rw_size();
+						char* buf = new char[ ss ];
+						ssize_t write_res = ::write( fib->first, buf, ss );
+						f->set_last_write( write_res );
+						if ( write_res > 0 )
+						{
+							f->put_into_rw_buffer( buf, write_res );
+						}
 						f->set_state( fiber::READY );
 						blocked_fds.erase( fib );
 						io_facility->del( wev.data.fd );
+						delete[] buf;
 					}
 					break;
 
@@ -122,7 +142,6 @@ void worker::do_epolls()
 					cout << "worker: accept:" << wev.events << ", EPOLLIN: " << EPOLLIN << ", EPOLLOUT: " << EPOLLOUT << cout;
 					if ( wev.events & EPOLLIN )
 					{
-						buf = f->get_buffer();
 						::sockaddr_in sin;
 						::socklen_t sin_size = sizeof( ::sockaddr_in );
 						int afd = ::accept( fib->first, (::sockaddr*)&sin, &sin_size ); // C-call -- C-cast ;P
@@ -164,11 +183,12 @@ void worker::block_on_message( fiber::ptr fp )
 	fp->set_state( fiber::BLOCKED_FOR_MESSAGE );
 }
 
-void worker::process_incoming_messages()
+void worker::process_incoming_message_queues()
 {
 	shared_ptr< message > mess;
-	while ( pipe.read_for_slave( mess ) )
+	while ( pipe->read_for_slave( mess ) )
 	{
+		cout << "worker: got some message!" << endl;
 		switch ( mess->m_type )
 		{
 			case message_type::ServiceMessage:
@@ -180,13 +200,12 @@ void worker::process_incoming_messages()
 				break;
 
 			default:
+			cout << "worker: got some message, but don't know what" << endl;
 				break;
 		}
 	}
 }
 
-#include <iostream>
-using namespace std;
 void worker::process_service_message( message::ptr& m )
 {
 	service_message::ptr sm = dynamic_pointer_cast< service_message >( m );
@@ -198,27 +217,22 @@ void worker::process_service_message( message::ptr& m )
 
 		case service_message::SPAWN:
 			{
-				serv_message< service_message::SPAWN >::ptr ssm( dynamic_pointer_cast< serv_message< service_message::SPAWN > >( m ) ); // I love c++ ;>
-
-				sched->insert( ssm->fiber_to_spawn );
-				serv_message< service_message::SPAWN_REPLY >::ptr r( new serv_message< service_message::SPAWN_REPLY >() );
-				message::ptr reply = dynamic_pointer_cast< message >( r );
-                reply->m_type = service_message::SPAWN_REPLY;
-				pipe.write_to_master( reply );
+				sched->insert( sm->fiber_to_spawn );
+				sm.reset( new service_message( service_message::SPAWN_REPLY ) );
+				message::ptr reply = dynamic_pointer_cast< message >( sm );
+				pipe->write_to_master( reply );
 	cout << this << ": write_to_master done" << ", size: " << workload() << endl;
 			}
 			break;
 
 		case service_message::BROADCAST_MESSAGE:
 			{
-				serv_message< service_message::BROADCAST_MESSAGE >::ptr ssm 
-					= dynamic_pointer_cast< serv_message< service_message::BROADCAST_MESSAGE > >( m ); // I love c++ (again);>
-
-				pass_message_to_fiber( ssm->fiber_data );
+				pass_message_to_fiber( sm->fiber_data );
 			}
 			break;
 
 		default:
+			cout << "worker: got some message, but don't know what" << endl;
 			break;
 	}
 }
@@ -238,7 +252,7 @@ void worker::pass_message_to_fiber( shared_ptr< message >& m )
 	}
 }
 
-void worker::send_message( std::tr1::shared_ptr< message_queues::fiber_message > m )
+void worker::send_message( fiber_message::ptr m )
 {
 	if ( sched->has_fiber( m->receiver ) )
 	{
@@ -247,32 +261,29 @@ void worker::send_message( std::tr1::shared_ptr< message_queues::fiber_message >
 	}
 	else
 	{
-		serv_message< service_message::BROADCAST_MESSAGE >::ptr mm( new serv_message< service_message::BROADCAST_MESSAGE >() );
+		service_message::ptr mm( new service_message( service_message::BROADCAST_MESSAGE ) );
 		mm->fiber_data = m;
 		message::ptr mp = dynamic_pointer_cast< message >( mm );
-		pipe.write_to_master( mp );
+		pipe->write_to_master( mp );
 	}
 }
 
-void worker::spawn( fiber::ptr f )
+void worker::spawn( fiber::ptr& f )
 {
-	my_master->spawn( f );
-	/*
-	serv_message< service_message::SPAWN >::ptr m( new serv_message< service_message::SPAWN >() );
+	service_message::ptr m( new service_message( service_message::SPAWN ) );
 	message::ptr sm = dynamic_pointer_cast< message >( m );
 	m->fiber_to_spawn = f;
-	pipe.write_to_master( sm );
-	*/
+	pipe->write_to_master( sm );
 }
 
-bool worker::read_for_master( std::tr1::shared_ptr< message_queues::message >& m )
+bool worker::read_for_master( message::ptr& m )
 {
-	return pipe.read_for_master( m );
+	return pipe->read_for_master( m );
 }
 
-void worker::write_to_slave( std::tr1::shared_ptr< message_queues::message >& m )
+void worker::write_to_slave( message::ptr& m )
 {
-	pipe.write_to_slave( m );
+	pipe->write_to_slave( m );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

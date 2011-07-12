@@ -17,8 +17,8 @@ namespace message_queues
       void push( message::ptr& m );
 
     private:
-      message::ptr first_to_write;
-      message::ptr first_to_read;
+			message::ptr first_to_write;
+			message::ptr first_to_read;
   };
 
   class message_queue : public std::tr1::enable_shared_from_this< message_queue >

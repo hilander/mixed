@@ -19,7 +19,7 @@ namespace masters
 
 			void init();
 
-			void spawn( fibers::fiber::ptr f );
+			void spawn( fibers::fiber::ptr& f );
 
 		private:
 			master();
@@ -27,7 +27,7 @@ namespace masters
 			bool its_time_to_end();
 
 			void read_from_slave( workers::worker::ptr s );
-			void read_messages();
+			void read_message_queues();
 
 			std::tr1::shared_ptr< workers::worker > get_worker_with_smallest_workload();
 

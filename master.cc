@@ -56,7 +56,7 @@ void master::run()
 {
 	while ( ! its_time_to_end() )
 	{
-		read_messages();
+		read_message_queues();
 		own_slave->iteration();
 	}
 }
@@ -106,16 +106,15 @@ worker::ptr master::get_worker_with_smallest_workload()
 
 #include <iostream>
 using namespace std;
-void master::spawn( fiber::ptr f )
+void master::spawn( fiber::ptr& f )
 {
-	serv_message< service_message::SPAWN >::ptr p;
-	p.reset( new serv_message< service_message::SPAWN >() );
+	service_message::ptr p( new service_message( service_message::SPAWN ) );
 	p->fiber_to_spawn = f;
 	worker::ptr s = get_worker_with_smallest_workload();
 	message::ptr m = dynamic_pointer_cast< message >( p );
 	s->write_to_slave( m );
 	workload++;
-	cout << "write_to_slave done" << endl;
+	cout << "write_to_slave " << s.get() << " done" << endl;
 }
 
 void master::read_from_slave( worker::ptr s )
@@ -129,14 +128,13 @@ void master::read_from_slave( worker::ptr s )
 		{
 			case service_message::SPAWN:
 				{
-					serv_message< service_message::SPAWN >::ptr spm = dynamic_pointer_cast< serv_message< service_message::SPAWN > >( sm );
-                    if ( spm.get() != 0 )
-                    {
-                        fiber::ptr fp = spm->fiber_to_spawn;
-                        spawn( fp );
-                    }
-                    cout << "master: SPAWN. Size = " << workload << endl;
-				workload--;
+					fiber::ptr fp = sm->fiber_to_spawn;
+					//spawn( fp );
+					worker::ptr s = get_worker_with_smallest_workload();
+					s->write_to_slave( m );
+				  workload++;
+					cout << "master: SPAWN. Size = " << workload << endl;
+					cout << "write_to_slave " << s.get() << " done" << endl;
 					break;
 				}
 
@@ -169,7 +167,7 @@ void master::read_from_slave( worker::ptr s )
 	}
 }
 
-void master::read_messages()
+void master::read_message_queues()
 {
 	vector< worker::ptr >::iterator sli = slaves.begin();
 	for (

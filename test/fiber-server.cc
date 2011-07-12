@@ -44,8 +44,8 @@ class f_listener : public fibers::fiber
 		{
 			const int init_message_size = 12;
 
-			shared_ptr< vector< char > > fiber_buffer( get_buffer() );
-			fiber_buffer->resize( init_message_size );
+			rw_buffer->resize( init_message_size );
+				cout << "f_listener: fiber_buffer Size = " << rw_buffer->size() << endl;
 
       char buf[ init_message_size ];
       ssize_t read_bytes =  init_message_size ;
@@ -57,11 +57,18 @@ class f_listener : public fibers::fiber
 			}
 			else
 			{
-				cout << "f_listener: Message read" << endl;
+				/*
+				for ( int i=0; i<fiber_buffer->size(); i++ )
+				{
+				}
+				*/
+				//fiber_buffer = get_buffer();
+				cout << "f_listener: Message read. Size = " << rw_buffer->size() << endl;
+				//copy( fiber_buffer->begin(), fiber_buffer->end(), buf );
 			}
-			string s = string(buf).substr( 6, init_message_size );
+			string s = string( rw_buffer->begin(), rw_buffer->end() ).substr( 6, init_message_size );
 			std::stringstream sstr;
-			sstr << string(buf).substr( 6, init_message_size );
+			sstr << string( rw_buffer->begin(), rw_buffer->end() ).substr( 6, init_message_size );
 			int bytes = 0;
 			sstr >> bytes;
 
@@ -72,9 +79,9 @@ class f_listener : public fibers::fiber
 			for ( int i = 0; i < bytes; i++ )
 			{
 				socket_write( 1 );
-				sndbuf[0] = fiber_buffer->at( 0 );
+				sndbuf[0] = rw_buffer->at( 0 );
 				socket_read( 1 );
-				recbuf[0] = fiber_buffer->at( 0 );
+				recbuf[0] = rw_buffer->at( 0 );
 				if ( sndbuf[0] != recbuf[0] )
 				{
 					std::cout << "Server listener: Client response incorrect." << std::endl;
@@ -90,7 +97,7 @@ class f_listener : public fibers::fiber
 		{
 			if ( do_read( fd, bytes ) != bytes )
 			{
-				cout << "f_listener::socket_read(): exception" << endl;
+				//cout << "f_listener::socket_read(): exception" << endl;
 			}
 		}
 
@@ -98,7 +105,7 @@ class f_listener : public fibers::fiber
 		{
 			if ( do_write( fd, bytes ) != bytes )
 			{
-				cout << "f_listener::socket_write(): exception" << endl;
+				//cout << "f_listener::socket_write(): exception" << endl;
 			}
 		}
 
@@ -154,7 +161,7 @@ class f_client : public fiber
 
 		void create_listener( int listen_descriptor )
 		{
-			shared_ptr< f_listener > l( new f_listener( listen_descriptor, shared_from_this() ) );
+			fiber::ptr l( new f_listener( listen_descriptor, shared_from_this() ) );
 			l->init();
 			spawn( l );
 			listeners.push_back( l );
@@ -272,11 +279,12 @@ int main(int argc ,char* argv[])
 {
   signal( SIGPIPE, SIG_IGN );
   char loopback[] = "127.0.0.1";
-	master::ptr mp( master::create() );
+	master* mp = master::create();
 
 	f_client::ptr fcl( new f_client( ( argc == 2 ) ? argv[1] : loopback ) );
+	fiber::ptr cl = dynamic_pointer_cast< fiber >( fcl );
 	fcl->init();
-  mp->spawn( fcl );
+  mp->spawn( cl );
   mp->run();
 
   return 0;

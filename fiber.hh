@@ -53,17 +53,16 @@ namespace fibers
 			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
 			void receive_message( std::tr1::shared_ptr< message_queues::fiber_message >& p);
+
 			std::tr1::shared_ptr< message_queues::fiber_message > receive_message_nonblock();
 
-			void spawn( ptr f );
+			void spawn( ptr& f );
 
 			// methods used by other components, not for normal user
 
       current_state get_state();
 
 			void set_state( current_state s );
-
-			std::tr1::shared_ptr< std::vector< char > > get_buffer();
 
 			ssize_t get_rw_size();
 
@@ -77,13 +76,16 @@ namespace fibers
 
 			void put_into_message_buffer( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
+			void put_into_rw_buffer( char* b, ssize_t s );
+
 		protected:
 
 			std::list< std::tr1::shared_ptr< message_queues::fiber_message > > message_buffer;
 
+			std::tr1::shared_ptr< std::vector< char > > rw_buffer;
+
     private:
       current_state state;
-			std::tr1::shared_ptr< std::vector< char > > rw_buffer;
 			ssize_t rw_size;
 			ssize_t last_read;
 			ssize_t last_write;

@@ -1,8 +1,10 @@
 #include <tr1/memory>
 using std::tr1::shared_ptr;
 
-#include "message_queue.hh"
+#include "message.hh"
+using namespace message_queues;
 
+#include "message_queue.hh"
 using namespace message_queues;
 
 // private_list:

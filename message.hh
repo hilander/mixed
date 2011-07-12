@@ -32,6 +32,10 @@ namespace message_queues
 
 		fiber_message();
 
+		virtual ~fiber_message()
+		{
+		}
+
 		fibers::fiber::ptr sender;
 
 		fibers::fiber::ptr receiver;
@@ -41,7 +45,6 @@ namespace message_queues
 	{
     typedef std::tr1::shared_ptr< service_message > ptr;
 
-
 		enum available_services
 		{
 			SPAWN,
@@ -50,32 +53,18 @@ namespace message_queues
 			FINISH_WORK
 		};
 
-		service_message();
+		service_message( available_services s );
+
+		virtual ~service_message()
+		{
+		}
 
 		available_services service;
-	};
 
-	template < service_message::available_services N >
-	struct serv_message : public service_message
-	{
-	};
-
-	template <> struct serv_message< service_message::BROADCAST_MESSAGE > : public service_message
-	{
-    typedef std::tr1::shared_ptr< serv_message< service_message::BROADCAST_MESSAGE > > ptr;
+		std::tr1::shared_ptr< fibers::fiber > fiber_to_spawn;
 		std::tr1::shared_ptr< message > fiber_data;
 	};
 
-	template <> struct serv_message< service_message::SPAWN > : public service_message
-	{
-		typedef std::tr1::shared_ptr< serv_message< service_message::SPAWN > > ptr;
-		std::tr1::shared_ptr< fibers::fiber > fiber_to_spawn;
-	};
-
-	template <> struct serv_message< service_message::SPAWN_REPLY > : public service_message
-	{
-		typedef std::tr1::shared_ptr< serv_message< service_message::SPAWN_REPLY > > ptr;
-	};
 }
 
 #endif

@@ -4,10 +4,10 @@ using namespace std;
 #include <tr1/memory>
 using namespace std::tr1;
 
-#include <fiber.hh>
+#include "fiber.hh"
 using namespace fibers;
 
-#include <message.hh>
+#include "message.hh"
 using namespace message_queues;
 
 #include <master.hh>
@@ -105,8 +105,10 @@ int main(int,char**)
 	rp->init();
 
 	master* m = master::create();
-	m->spawn( rp->get_ptr() );
-	m->spawn( sp->get_ptr() );
+	fiber::ptr spf = dynamic_pointer_cast< fiber >( sp );
+	fiber::ptr rpf = dynamic_pointer_cast< fiber >( rp );
+	m->spawn( rpf );
+	m->spawn( spf );
 	m->run();
 	cout << "main: ok." << endl;
 	return 0;
