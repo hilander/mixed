@@ -50,15 +50,12 @@ void worker::init()
 	pipe.reset( new message_queue() );
 }
 
-#include <iostream>
-using namespace std;
 void worker::run()
 {
   while ( !finished() )
   {
     iteration();
   }
-	cout << "worker: done" << endl;
 }
 
 bool worker::finished()
@@ -139,7 +136,6 @@ void worker::do_epolls()
 					break;
 
 				case fiber::BLOCKED_FOR_ACCEPT:
-					cout << "worker: accept:" << wev.events << ", EPOLLIN: " << EPOLLIN << ", EPOLLOUT: " << EPOLLOUT << cout;
 					if ( wev.events & EPOLLIN )
 					{
 						::sockaddr_in sin;
@@ -153,7 +149,6 @@ void worker::do_epolls()
 							io_facility->del( wev.data.fd );
 						}
 					}
-					cout << "worker: accept done." << endl;
 					break;
 
 				default:
@@ -188,7 +183,6 @@ void worker::process_incoming_message_queues()
 	shared_ptr< message > mess;
 	while ( pipe->read_for_slave( mess ) )
 	{
-		cout << "worker: got some message!" << endl;
 		switch ( mess->m_type )
 		{
 			case message_type::ServiceMessage:
@@ -200,7 +194,6 @@ void worker::process_incoming_message_queues()
 				break;
 
 			default:
-			cout << "worker: got some message, but don't know what" << endl;
 				break;
 		}
 	}
@@ -221,7 +214,6 @@ void worker::process_service_message( message::ptr& m )
 				sm.reset( new service_message( service_message::SPAWN_REPLY ) );
 				message::ptr reply = dynamic_pointer_cast< message >( sm );
 				pipe->write_to_master( reply );
-	cout << this << ": write_to_master done" << ", size: " << workload() << endl;
 			}
 			break;
 
@@ -232,7 +224,6 @@ void worker::process_service_message( message::ptr& m )
 			break;
 
 		default:
-			cout << "worker: got some message, but don't know what" << endl;
 			break;
 	}
 }

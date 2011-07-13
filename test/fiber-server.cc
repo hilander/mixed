@@ -124,7 +124,7 @@ class f_client : public fiber
     virtual void go()
     {
 
-			int max_opened = 1;
+			int max_opened = 2;
 			int sa = init_socket();
 			if ( sa < 0 )
 			{
@@ -150,9 +150,6 @@ class f_client : public fiber
 				}
 			}
 
-			//std::cout << "opened_sockets (out of loop): " << opened_sockets << std::endl;
-			//std::for_each ( listeners.begin(), listeners.end(), &waitfor );
-			//wait_for_listeners( max_opened );
 			::close( sa );
 			std::cout << "Server: exiting. " << std::endl;
     }

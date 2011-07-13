@@ -20,6 +20,7 @@ using namespace masters;
 
 void* worker_pthread_starter( worker* w )
 {
+	w->run();
 	return 0;
 }
 
@@ -30,8 +31,6 @@ master* master::create()
 	return p;
 }
 
-#include <iostream>
-using namespace std;
 bool master::its_time_to_end()
 {
 	int total_workload = own_slave->workload() + workload;
@@ -48,7 +47,6 @@ bool master::its_time_to_end()
 		}
 	}
 
-//	cout << "total workload: " << total_workload << endl;
 	return total_workload == 0;
 }
 
@@ -114,7 +112,6 @@ void master::spawn( fiber::ptr& f )
 	message::ptr m = dynamic_pointer_cast< message >( p );
 	s->write_to_slave( m );
 	workload++;
-	cout << "write_to_slave " << s.get() << " done" << endl;
 }
 
 void master::read_from_slave( worker::ptr s )
@@ -129,23 +126,18 @@ void master::read_from_slave( worker::ptr s )
 			case service_message::SPAWN:
 				{
 					fiber::ptr fp = sm->fiber_to_spawn;
-					//spawn( fp );
 					worker::ptr s = get_worker_with_smallest_workload();
 					s->write_to_slave( m );
 				  workload++;
-					cout << "master: SPAWN. Size = " << workload << endl;
-					cout << "write_to_slave " << s.get() << " done" << endl;
 					break;
 				}
 
 			case service_message::SPAWN_REPLY:
 				workload--;
-                    cout << "master: SPAWN_REPLY" << endl;
 				break;
 
 			case service_message::BROADCAST_MESSAGE:
 				{
-                    cout << "master: BROADCAST_MESSAGE" << endl;
 					own_slave->write_to_slave( m );
 					vector< worker::ptr >::iterator si = slaves.begin();
 					for (

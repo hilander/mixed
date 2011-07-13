@@ -50,7 +50,7 @@ namespace fibers
 
 			int do_accept( int f );
 
-			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
+			void send_message( std::tr1::shared_ptr< message_queues::fiber_message >& m );
 
 			void receive_message( std::tr1::shared_ptr< message_queues::fiber_message >& p);
 

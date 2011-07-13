@@ -55,27 +55,15 @@ int fiber::do_accept( int f )
 	return last_accepted_fd;
 }
 
-void fiber::send_message( fiber_message::ptr m )
+void fiber::send_message( fiber_message::ptr& m )
 {
 	owner->send_message( m );
 }
 
-//#include <iostream>
-//using namespace std;
 void fiber::receive_message( fiber_message::ptr& p )
 {
-    owner->block_on_message( shared_from_this() );
+	owner->block_on_message( shared_from_this() );
 	yield();
-    if ( message_buffer.empty() )
-    {
-        throw exception();
-    }
-		/*
-    else
-    {
-        cout << "fiber::receive(): message_buffer.size(): " << message_buffer.size() << endl;
-    }
-		*/
 	p = message_buffer.front();
 	message_buffer.pop_front();
 }
