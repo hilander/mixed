@@ -44,3 +44,7 @@ add_executable ( fiber-server fiber-server.cc )
 target_link_libraries ( fiber-server libmixed )
 target_link_libraries ( fiber-server pthread )
 
+add_executable ( fiber-client fiber-client.cc )
+target_link_libraries ( fiber-client libmixed )
+target_link_libraries ( fiber-client pthread )
+
