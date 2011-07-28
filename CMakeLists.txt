@@ -10,6 +10,7 @@ if ( NOT CMAKE_BUILD_TYPE )
 endif ( NOT CMAKE_BUILD_TYPE )
 
 set ( CMAKE_CXX_FLAGS_DEBUG " -ggdb -o0 -Wall -lstdc++" )
+set ( CMAKE_CXX_FLAGS_RELEASE " -O2 -lstdc++" )
 message ( "build type: ${CMAKE_BUILD_TYPE}." )
 set ( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
 set ( LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib )

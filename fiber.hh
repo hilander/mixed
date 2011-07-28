@@ -32,6 +32,7 @@ namespace fibers
 			BLOCKED_FOR_READ,
 			BLOCKED_FOR_WRITE,
 			BLOCKED_FOR_ACCEPT,
+			BLOCKED_FOR_CONNECT,
 			BLOCKED_FOR_MESSAGE
     };
 
@@ -49,6 +50,8 @@ namespace fibers
 			ssize_t do_write( int f, ssize_t s );
 
 			int do_accept( int f );
+
+			void do_connect( int f );
 
 			void send_message( std::tr1::shared_ptr< message_queues::fiber_message >& m );
 

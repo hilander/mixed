@@ -151,6 +151,16 @@ void worker::do_epolls()
 					}
 					break;
 
+				case fiber::BLOCKED_FOR_CONNECT:
+					//cout << "worker: connect " << wev.events << ": " << ( wev.events & ( EPOLLIN | EPOLLOUT ) ) << endl;
+					if ( wev.events & ( EPOLLIN | EPOLLOUT ) )
+					{
+						f->set_state( fiber::READY );
+						blocked_fds.erase( fib );
+						io_facility->del( wev.data.fd );
+					}
+					break;
+
 				default:
 					break;
 			}

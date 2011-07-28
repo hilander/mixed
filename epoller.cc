@@ -53,7 +53,7 @@ int epoller::do_epolls()
 
 	if ( fds > 0 )
 	{
-		return ::epoll_wait( own_fd, raw_events, fds, 0 );
+		return ::epoll_wait( own_fd, raw_events, fds, 1 );
 	}
 	return 0;
 }

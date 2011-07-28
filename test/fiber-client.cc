@@ -12,6 +12,7 @@ using namespace std::tr1;
 #include <arpa/inet.h>
 #include <sys/epoll.h>
 #include <errno.h>
+#include <errno.h>
 #include <pthread.h>
 #include <memory>
 #include <vector>
@@ -26,7 +27,7 @@ using namespace masters;
 
 const int default_port = 8100;
 
-void s_err( int num, string& s );
+string s_err( int num );
 
 class f_client : public fiber
 {
@@ -38,14 +39,24 @@ class f_client : public fiber
 
     virtual void go()
     {
-			int sa = init_socket();
+			int sa;
 
-			if ( sa < 0 )
+			for ( int tries = 0; tries < 10; tries++ )
 			{
-				return;
+				sa = init_socket();
+
+				if ( sa < 0 )
+				{
+					//return;
+				}
+				else
+				{
+					break;
+					//cout << "client: socket ready" << endl;
+				}
 			}
 			
-			int n = 1000;
+			int n = 10;
       char num[6];
 			sprintf( num, "%6d", n );
 			string buf( string( "HELLO:" ) + string( num ) );
@@ -53,12 +64,15 @@ class f_client : public fiber
 			copy( buf.begin(), buf.end(), rw_buffer->begin() );
 			do_write( sa, buf.size() );
 
+			//cout << "client: send/receive" << endl;
 			for ( int i = 0; i < n; i++ )
 			{
 				do_read( sa, 1 );
 				do_write( sa, 1 );
+			//cout << "."; cout.flush();
 			}
       ::close( sa );
+			cout << "client end" << endl;
     }
 
 	private:
@@ -74,24 +88,20 @@ class f_client : public fiber
       int orig_flags = fcntl( sa, F_GETFL );
       fcntl( sa, F_SETFL, orig_flags | O_NONBLOCK );
 
-      int sw = 0;
+      int sw = ::connect( sa, (const sockaddr*)&sar, sizeof(sar) );
       
-      do
-      {
-        sw = ::connect( sa, (const sockaddr*)&sar, sizeof(sar) );
-				if ( sw != 0 )
-				{
-					yield();
-				}
-      }
-      while ( sw != 0 && ( errno == EINPROGRESS || errno == EALREADY ) )
-        ;
+			while ( sw != 0 && errno == EINPROGRESS )
+			{
+				sw = ::connect( sa, (const sockaddr*)&sar, sizeof(sar) );
+				yield();
+			}
+
+			do_connect( sa );
 
       if ( sw != 0 )
       {
-        string error_name;
-        s_err( errno, error_name );
-        std::cout << "poller_client: connect() error: " << error_name << std::endl;
+				::close( sa );
+        std::cout << "poller_client: connect() error: " << s_err( errno ) << " (" << errno << ")" << std::endl;
         return -1;
       }
 			return sa;
@@ -102,69 +112,75 @@ class f_client : public fiber
 		int _port;
 };
 
-void s_err( int num, string& s )
+string s_err( int num )
 {
-  s.clear();
-
 	switch (num)
 	{
 		case EACCES:
-			s = string ( "EACCES" );
+			return string ( "EACCES" );
 			break;
 
 		case EPERM:
-			s = string ( "EPERM" );
+			return string ( "EPERM" );
 			break;
 
 		case EADDRINUSE:
-			s = string ( "EADDRINUSE" );
+			return string ( "EADDRINUSE" );
 			break;
 
 		case EAFNOSUPPORT:
-			s = string ( "EAFNOSUPPORT" );
+			return string ( "EAFNOSUPPORT" );
 			break;
 
 		case EAGAIN :
-			s = string ( "EAGAIN" );
+			return string ( "EAGAIN" );
 			break;
 
 		case EALREADY:
-			s = string ( "EALREADY" );
+			return string ( "EALREADY" );
 			break;
 
 		case EBADF :
-			s = string ( "EBADF" );
+			return string ( "EBADF" );
 			break;
 
 		case ECONNREFUSED:
-			s = string ( "ECONNREFUSED" );
+			return string ( "ECONNREFUSED" );
 			break;
 
 		case EFAULT:
-			s = string ( "EFAULT" );
+			return string ( "EFAULT" );
 			break;
 
 		case EINPROGRESS:
-			s = string ( "EINPROGRESS" );
+			return string ( "EINPROGRESS" );
 			break;
 
 		case EINTR:
-			s = string ( "EINTR" );
+			return string ( "EINTR" );
 			break;
 		case EISCONN:
-			s = string ( "EISCONN" );
+			return string ( "EISCONN" );
 			break;
 
 		case ENETUNREACH:
-			s = string ( "ENETUNREACH" );
+			return string ( "ENETUNREACH" );
 			break;
 
 		case ENOTSOCK:
-			s = string ( "ENOTSOCK" );
+			return string ( "ENOTSOCK" );
 			break;
 
 		case ETIMEDOUT:
-			s = string ( "EACCES" );
+			return string ( "EACCES" );
+			break;
+
+		case EEXIST:
+			return string ( "EEXIST" );
+			break;
+
+		default:
+			return string( "unknown" );
 			break;
 	}
 }
@@ -175,7 +191,7 @@ int main(int argc ,char* argv[])
 
 	if ( argc != 3 )
 	{
-		std::cout << "Error! Improper number of bytes!" << std::endl;
+		cout << "Error! Improper number of bytes!" << endl;
 		return 1;
 	}
 
@@ -187,9 +203,14 @@ int main(int argc ,char* argv[])
 	int port;
 	sstr >> port;
 
-	fiber::ptr fcl( new f_client( argv[1], port ) );
-	fcl->init();
-  mp->spawn( fcl );
+	int fiber_count = 1000;
+	fiber::ptr fcl[fiber_count];
+	for (int i = 0; i < fiber_count; i++ )
+	{
+		fcl[i].reset( new f_client( argv[1], port ) );
+		fcl[i]->init();
+		mp->spawn( fcl[i] );
+	}
   mp->run();
 
   return 0;

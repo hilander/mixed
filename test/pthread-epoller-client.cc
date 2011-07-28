@@ -13,6 +13,76 @@
 using namespace std;
 using namespace std::tr1;
 
+string s_err( int num )
+{
+	switch (num)
+	{
+		case EACCES:
+			return string ( "EACCES" );
+			break;
+
+		case EPERM:
+			return string ( "EPERM" );
+			break;
+
+		case EADDRINUSE:
+			return string ( "EADDRINUSE" );
+			break;
+
+		case EAFNOSUPPORT:
+			return string ( "EAFNOSUPPORT" );
+			break;
+
+		case EAGAIN :
+			return string ( "EAGAIN" );
+			break;
+
+		case EALREADY:
+			return string ( "EALREADY" );
+			break;
+
+		case EBADF :
+			return string ( "EBADF" );
+			break;
+
+		case ECONNREFUSED:
+			return string ( "ECONNREFUSED" );
+			break;
+
+		case EFAULT:
+			return string ( "EFAULT" );
+			break;
+
+		case EINPROGRESS:
+			return string ( "EINPROGRESS" );
+			break;
+
+		case EINTR:
+			return string ( "EINTR" );
+			break;
+
+		case EISCONN:
+			return string ( "EISCONN" );
+			break;
+
+		case ENETUNREACH:
+			return string ( "ENETUNREACH" );
+			break;
+
+		case ENOTSOCK:
+			return string ( "ENOTSOCK" );
+			break;
+
+		case ETIMEDOUT:
+			return string ( "EACCES" );
+			break;
+
+		default:
+			return string ( "unknown" );
+			break;
+	}
+}
+
 class f_client
 {
   public:
@@ -34,9 +104,9 @@ class f_client
 			}
 			
 			int n = 1000;
-      char num[6];
-			sprintf( num, "%6d", n );
-			string buf( string( "HELLO:" ) + string( num ) );
+      char transfer_number[6];
+			sprintf( transfer_number, "%6d", n );
+			string buf( string( "HELLO:" ) + string( transfer_number ) );
       ssize_t written_bytes = buf.size();
 			char* b = (char*)buf.c_str();
 
@@ -53,11 +123,7 @@ class f_client
 				sndbuf[0] = recbuf[0];
 				::write( fd, sndbuf, 1 );
 			}
-      //while ( ::read( fd, recbuf, 1 ) != 0 )
-      //{
-      //}
-      ::close( fd );
-			//cout << "fiber_client(" << (int)num << "): end." << endl;
+			cout << num << ".."; cout.flush();
     }
 
 	private:
@@ -81,7 +147,7 @@ class f_client
 
       if ( sw != 0 )
       {
-        cout << "poller_client(" << num << "): connect() error: " << endl;
+        cout << "poller_client(" << num << "): connect() error: " << s_err( errno ) << endl;
         return -1;
       }
       else
@@ -106,7 +172,7 @@ static void* starter( f_client* c )
 
 int main(int,char**)
 {
-  const int overall_clients = 100;
+  const int overall_clients = 10;
 
   vector< shared_ptr< ::pthread_t > > threads( overall_clients );
   vector< shared_ptr< f_client > > clients( overall_clients );
@@ -125,5 +191,6 @@ int main(int,char**)
   {
     ::pthread_join( *threads[j], 0 );
   }
+	cout << "client: end." << endl;
   return 0;
 }

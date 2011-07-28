@@ -114,13 +114,6 @@ class server_socket
 			wait_for_end we;
 			for_each( threads.begin(), threads.end(), we );
 
-			// wait for socket to do proper close ( avoid TIME_WAIT state ):
-			/*
-			char tmp_buf[100];
-			while ( ::read( fd, tmp_buf, 100 ) != 0 )
-			{
-			}
-			*/
 			cout << "fiber_server::go(): ok" << endl;
 			::close( fd );;
 			std::cout << "Server: exiting. " << std::endl;

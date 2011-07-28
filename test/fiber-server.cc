@@ -45,26 +45,16 @@ class f_listener : public fibers::fiber
 			const int init_message_size = 12;
 
 			rw_buffer->resize( init_message_size );
-				cout << "f_listener: fiber_buffer Size = " << rw_buffer->size() << endl;
 
-      char buf[ init_message_size ];
       ssize_t read_bytes =  init_message_size ;
 
-			cout << "f_listener: begin" << endl;
 			if ( do_read( fd, read_bytes ) != read_bytes )
 			{
-				throw exception();
+				cout << "Server listener: end( prematurely )." << endl;
+				::close( fd );
 			}
 			else
 			{
-				/*
-				for ( int i=0; i<fiber_buffer->size(); i++ )
-				{
-				}
-				*/
-				//fiber_buffer = get_buffer();
-				cout << "f_listener: Message read. Size = " << rw_buffer->size() << endl;
-				//copy( fiber_buffer->begin(), fiber_buffer->end(), buf );
 			}
 			string s = string( rw_buffer->begin(), rw_buffer->end() ).substr( 6, init_message_size );
 			std::stringstream sstr;
@@ -74,7 +64,7 @@ class f_listener : public fibers::fiber
 
 			char sndbuf[1];
 			char recbuf[1];
-			sndbuf[0] = 42;
+			rw_buffer->at( 0 ) = 42;
 
 			for ( int i = 0; i < bytes; i++ )
 			{
@@ -124,7 +114,7 @@ class f_client : public fiber
     virtual void go()
     {
 
-			int max_opened = 2;
+			int max_opened = 1000;
 			int sa = init_socket();
 			if ( sa < 0 )
 			{
@@ -140,7 +130,7 @@ class f_client : public fiber
 				{
 					string error_name;
 					s_err( errno, error_name );
-					std::cout << "poller_client: connect() error: " << error_name << std::endl;
+					std::cout << "poller_client: accept() error: " << error_name << std::endl;
 					//return;
 				}
 				else
@@ -162,6 +152,7 @@ class f_client : public fiber
 			l->init();
 			spawn( l );
 			listeners.push_back( l );
+			//cout << "server: client created" << endl;
 		}
 
 		int init_socket()
@@ -197,7 +188,20 @@ class f_client : public fiber
 
 		int wait_for_connection( int sa )
 		{
-			return do_accept( sa );
+			int sw = 0;
+			sockaddr_in sadr;
+			socklen_t sadrlen = sizeof( sockaddr_in );
+			while ( ( sw = ::accept( sa, (::sockaddr*)&sadr, &sadrlen ) ) <= 0 )
+			{
+				if ( errno != EAGAIN )
+				{
+					string s;
+					s_err( errno, s );
+					cout << "accept error: " << s << endl;
+				}
+				yield();
+			}
+			return sw;
 		}
 
   private:

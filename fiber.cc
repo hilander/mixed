@@ -55,6 +55,12 @@ int fiber::do_accept( int f )
 	return last_accepted_fd;
 }
 
+void fiber::do_connect( int f )
+{
+	owner->block_on_io( f, shared_from_this(), BLOCKED_FOR_CONNECT );
+	yield();
+}
+
 void fiber::send_message( fiber_message::ptr& m )
 {
 	owner->send_message( m );
