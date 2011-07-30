@@ -103,7 +103,7 @@ class f_client
 				return;
 			}
 			
-			int n = 1000;
+			int n = 10;
       char transfer_number[6];
 			sprintf( transfer_number, "%6d", n );
 			string buf( string( "HELLO:" ) + string( transfer_number ) );
@@ -172,7 +172,7 @@ static void* starter( f_client* c )
 
 int main(int,char**)
 {
-  const int overall_clients = 10;
+  const int overall_clients = 100;
 
   vector< shared_ptr< ::pthread_t > > threads( overall_clients );
   vector< shared_ptr< f_client > > clients( overall_clients );

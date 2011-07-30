@@ -114,7 +114,7 @@ class f_client : public fiber
     virtual void go()
     {
 
-			int max_opened = 1000;
+			int max_opened = 100;
 			int sa = init_socket();
 			if ( sa < 0 )
 			{

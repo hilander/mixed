@@ -84,6 +84,7 @@ void worker::set_master( masters::master* m )
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <iostream>
+#include <errno.h>
 using namespace std;
 void worker::do_epolls()
 {
@@ -155,9 +156,16 @@ void worker::do_epolls()
 					//cout << "worker: connect " << wev.events << ": " << ( wev.events & ( EPOLLIN | EPOLLOUT ) ) << endl;
 					if ( wev.events & ( EPOLLIN | EPOLLOUT ) )
 					{
-						f->set_state( fiber::READY );
-						blocked_fds.erase( fib );
-						io_facility->del( wev.data.fd );
+						if ( wev.events & EPOLLERR )
+						{
+							cout << "CONNECT: error: " << errno << endl;
+						}
+						else
+						{
+							f->set_state( fiber::READY );
+							blocked_fds.erase( fib );
+							io_facility->del( wev.data.fd );
+						}
 					}
 					break;
 
