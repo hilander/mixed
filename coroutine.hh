@@ -6,33 +6,33 @@
 
 namespace coroutines
 {
-  class coroutine
-  {
-    public:
-      typedef std::tr1::shared_ptr< coroutine > ptr;
-      static const size_t StackSize;
+	class coroutine
+	{
+		public:
+			typedef std::tr1::shared_ptr< coroutine > ptr;
+			static const size_t StackSize;
 
-    public:
-      coroutine();
+		public:
+			coroutine();
 
-      virtual ~coroutine();
+			virtual ~coroutine();
 
-      virtual void go() = 0;
+			virtual void go() = 0;
 
-      virtual void start() = 0;
+			virtual void start() = 0;
 
-      void run( ::ucontext_t* return_to );
+			void run( ::ucontext_t* return_to );
 
-      void init();
+			void init();
 
-      void yield();
+			void yield();
 
 			::ucontext_t* get_context();
 
-    private:
-      ::ucontext_t own_context;
-      ::ucontext_t* return_context;
-  };
+		private:
+			::ucontext_t own_context;
+			::ucontext_t* return_context;
+	};
 }
 
 #endif

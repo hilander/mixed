@@ -12,22 +12,22 @@ using namespace fibers;
 
 class fiber_runner
 {
-  public:
-    fiber_runner( shared_ptr< ::ucontext_t > c )
-    : worker_ctx( c )
-    {
-    }
+	public:
+		fiber_runner( shared_ptr< ::ucontext_t > c )
+			: worker_ctx( c )
+		{
+		}
 
-    void operator() ( fiber::ptr fp )
-    {
-      if ( fp->get_state() == fiber::READY )
-      {
-        fp->run( worker_ctx.get() );
-      }
-    }
+		void operator() ( fiber::ptr fp )
+		{
+			if ( fp->get_state() == fiber::READY )
+			{
+				fp->run( worker_ctx.get() );
+			}
+		}
 
-  private:
-    shared_ptr< ::ucontext_t > worker_ctx;
+	private:
+		shared_ptr< ::ucontext_t > worker_ctx;
 };
 
 scheduler::scheduler()
@@ -36,17 +36,17 @@ scheduler::scheduler()
 
 scheduler::ptr scheduler::create()
 {
-  scheduler::ptr p( new scheduler() );
-  p->init();
-  return p;
+	scheduler::ptr p( new scheduler() );
+	p->init();
+	return p;
 }
 
 scheduler::ptr scheduler::create( std::tr1::shared_ptr< workers::worker > o )
 {
-  scheduler::ptr p( new scheduler() );
-  p->init();
+	scheduler::ptr p( new scheduler() );
+	p->init();
 	p->set_owner( o );
-  return p;
+	return p;
 }
 
 void scheduler::init()
@@ -61,13 +61,13 @@ void scheduler::init()
 
 int scheduler::workload()
 {
-  return runners.size();
+	return runners.size();
 }
 
 void scheduler::run()
 {
-  fiber_runner run_part( own_context );
-  for_each( runners.begin(), runners.end(), run_part );
+	fiber_runner run_part( own_context );
+	for_each( runners.begin(), runners.end(), run_part );
 	remove_finished();
 }
 

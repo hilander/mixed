@@ -19,31 +19,31 @@ namespace workers
 
 namespace fibers
 {
-  class fiber : public std::tr1::enable_shared_from_this< fiber >, public coroutines::coroutine
-  {
-    public:
-    typedef std::tr1::shared_ptr< fiber > ptr;
+	class fiber : public std::tr1::enable_shared_from_this< fiber >, public coroutines::coroutine
+	{
+		public:
+			typedef std::tr1::shared_ptr< fiber > ptr;
 
-    enum current_state
-    {
-      READY,
-      FINISHED,
-      BLOCKED,
-			BLOCKED_FOR_READ,
-			BLOCKED_FOR_WRITE,
-			BLOCKED_FOR_ACCEPT,
-			BLOCKED_FOR_CONNECT,
-			BLOCKED_FOR_MESSAGE
-    };
+			enum current_state
+			{
+				READY,
+				FINISHED,
+				BLOCKED,
+				BLOCKED_FOR_READ,
+				BLOCKED_FOR_WRITE,
+				BLOCKED_FOR_ACCEPT,
+				BLOCKED_FOR_CONNECT,
+				BLOCKED_FOR_MESSAGE
+			};
 
-    public:
-      fiber();
+		public:
+			fiber();
 
-      virtual ~fiber();
+			virtual ~fiber();
 
-      virtual void go() = 0;
+			virtual void go() = 0;
 
-      virtual void start();
+			virtual void start();
 
 			ssize_t do_read( int f, ssize_t s );
 
@@ -63,7 +63,7 @@ namespace fibers
 
 			// methods used by other components, not for normal user
 
-      current_state get_state();
+			current_state get_state();
 
 			void set_state( current_state s );
 
@@ -87,14 +87,14 @@ namespace fibers
 
 			std::tr1::shared_ptr< std::vector< char > > rw_buffer;
 
-    private:
-      current_state state;
+		private:
+			current_state state;
 			ssize_t rw_size;
 			ssize_t last_read;
 			ssize_t last_write;
 			int last_accepted_fd;
 			std::tr1::shared_ptr< workers::worker > owner;
-  };
+	};
 }
 
 #endif

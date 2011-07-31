@@ -30,17 +30,12 @@ include_directories ( ${PROJECT_INC_DIR} )
 set ( LIBMIXED_SOURCES
   coroutine.cc
   epoller.cc
-#  factory.cpp
-#  specialize.cpp
   fiber.cc
-#  manager.cpp
-#  scheduler_tools.cpp
   scheduler.cc
   worker.cc
   master.cc
   "message.cc"
   message_queue.cc
-#	mutex_trylock.cpp
   )
 
 add_library ( libmixed SHARED ${LIBMIXED_SOURCES} )

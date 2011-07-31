@@ -8,19 +8,19 @@
 
 namespace epollers
 {
-  class epoller
-  {
+	class epoller
+	{
 		private:
 			epoller();
 
-    public:
-      typedef std::tr1::shared_ptr< epoller > ptr;
+		public:
+			typedef std::tr1::shared_ptr< epoller > ptr;
 
 			static ptr create();
 
 			virtual ~epoller();
 
-      int do_epolls();
+			int do_epolls();
 
 			void add( int f );
 
@@ -30,12 +30,12 @@ namespace epollers
 
 			::epoll_event* get_last_epoll_result();
 
-    private:
+		private:
 			::epoll_event* raw_events;
 			int rawevents_size;
-      int fds;
+			int fds;
 			int own_fd;
-  };
+	};
 }
 
 #endif

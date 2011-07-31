@@ -26,7 +26,7 @@ fiber::~fiber()
 void fiber::start()
 {
 	go();
-  state = FINISHED;
+	state = FINISHED;
 	yield();
 }
 
@@ -89,12 +89,12 @@ void fiber::spawn( ptr& f )
 
 fiber::current_state fiber::get_state()
 {
-  return state;
+	return state;
 }
 
 void fiber::set_state( fiber::current_state s )
 {
-  state = s;
+	state = s;
 }
 
 ssize_t fiber::get_rw_size()

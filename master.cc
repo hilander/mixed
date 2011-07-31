@@ -74,9 +74,9 @@ void master::init()
 			slaves.push_back( w );
 			::pthread_t pt;
 			::pthread_create( &pt
-                            , 0
-                            , reinterpret_cast< void*(*)(void*) >( &worker_pthread_starter )
-                            , reinterpret_cast< void* >( w.get() ) );
+					, 0
+					, reinterpret_cast< void*(*)(void*) >( &worker_pthread_starter )
+					, reinterpret_cast< void* >( w.get() ) );
 		}
 	}
 }
@@ -128,7 +128,7 @@ void master::read_from_slave( worker::ptr s )
 					fiber::ptr fp = sm->fiber_to_spawn;
 					worker::ptr s = get_worker_with_smallest_workload();
 					s->write_to_slave( m );
-				  workload++;
+					workload++;
 					break;
 				}
 
@@ -175,7 +175,7 @@ void master::read_message_queues()
 	read_from_slave( own_slave );
 }
 
-master::master()
+	master::master()
 : workload( 0 )
 {
 }

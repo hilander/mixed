@@ -28,7 +28,7 @@ using namespace epollers;
 #include "worker.hh"
 using namespace workers;
 
-worker::worker()
+	worker::worker()
 : master_allowed( false )
 {
 }
@@ -45,29 +45,29 @@ worker* worker::create()
 }
 void worker::init()
 {
-  sched = scheduler::create( shared_ptr< worker >( this ) );
-  io_facility = epoller::create();
+	sched = scheduler::create( shared_ptr< worker >( this ) );
+	io_facility = epoller::create();
 	pipe.reset( new message_queue() );
 }
 
 void worker::run()
 {
-  while ( !finished() )
-  {
-    iteration();
-  }
+	while ( !finished() )
+	{
+		iteration();
+	}
 }
 
 bool worker::finished()
 {
-  return master_allowed && ( sched->workload() == 0 );
+	return master_allowed && ( sched->workload() == 0 );
 }
 
 void worker::iteration()
 {
-  process_incoming_message_queues();
-  sched->run();
-  do_epolls();
+	process_incoming_message_queues();
+	sched->run();
+	do_epolls();
 }
 
 int worker::workload()
@@ -88,9 +88,9 @@ void worker::set_master( masters::master* m )
 using namespace std;
 void worker::do_epolls()
 {
-  int how_many =  io_facility->do_epolls();
-  if ( how_many > 0 )
-  {
+	int how_many =  io_facility->do_epolls();
+	if ( how_many > 0 )
+	{
 		::epoll_event* ev = io_facility->get_last_epoll_result();
 		for ( int i = 0; i < how_many; i++)
 		{
@@ -173,7 +173,7 @@ void worker::do_epolls()
 					break;
 			}
 		}
-  }
+	}
 }
 
 void worker::block_on_io( int f, fiber::ptr fp, fiber::current_state s )
