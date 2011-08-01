@@ -12,12 +12,12 @@ message::~message()
 
 fiber_message::fiber_message()
 {
-	m_type = message_type::FiberMessage;
+  m_type = message_type::FiberMessage;
 }
 
-	service_message::service_message( available_services s )
+  service_message::service_message( available_services s )
 : service( s )
 {
-	m_type = message_type::ServiceMessage;
+  m_type = message_type::ServiceMessage;
 }
 

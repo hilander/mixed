@@ -15,101 +15,101 @@ using namespace masters;
 
 struct my_message : public fiber_message
 {
-		typedef shared_ptr< my_message > ptr;
+    typedef shared_ptr< my_message > ptr;
     int my_int;
 };
 
 class sender : public fiber
 {
-	public:
-		typedef shared_ptr< sender > ptr;
-		sender()
-		{
-		}
+  public:
+    typedef shared_ptr< sender > ptr;
+    sender()
+    {
+    }
         virtual ~sender()
         {
         }
 
-		void set_receiver( fiber::ptr r )
-		{
-			rec = r;
-		}
-		virtual void go()
-		{
-			my_message::ptr mm( new my_message() );
-			mm->my_int = 42;
-			fiber_message::ptr fm( dynamic_pointer_cast<fiber_message>( mm ) );
-			fm->sender = fiber::ptr( this );
-			fm->receiver = rec;
-			send_message( fm );
-			 cout << "sender: ok" << endl;
-		}
+    void set_receiver( fiber::ptr r )
+    {
+      rec = r;
+    }
+    virtual void go()
+    {
+      my_message::ptr mm( new my_message() );
+      mm->my_int = 42;
+      fiber_message::ptr fm( dynamic_pointer_cast<fiber_message>( mm ) );
+      fm->sender = fiber::ptr( this );
+      fm->receiver = rec;
+      send_message( fm );
+       cout << "sender: ok" << endl;
+    }
 
-		fiber::ptr get_ptr()
-		{
-			return shared_from_this();
-		}
+    fiber::ptr get_ptr()
+    {
+      return shared_from_this();
+    }
 
-	private:
-		fiber::ptr rec;
+  private:
+    fiber::ptr rec;
 };
 
 class receiver : public fiber
 {
-	public:
-		typedef shared_ptr< receiver > ptr;
-		receiver()
-		{
-		}
+  public:
+    typedef shared_ptr< receiver > ptr;
+    receiver()
+    {
+    }
         virtual ~receiver()
         {
         }
 
-		void set_receiver( fiber::ptr r )
-		{
-			rec = r;
-		}
-		virtual void go()
-		{
-			fiber_message::ptr fm;
-			receive_message( fm ) ;
-			shared_ptr< my_message > mm( dynamic_pointer_cast< my_message >( fm ) );
-			if ( mm.get() != 0 )
-			{
-				cout << "receiver: ok: " << mm->my_int << endl;
-			}
-			else
-			{
-				cout << "receiver: Received trash" << endl;
-			}
-		}
+    void set_receiver( fiber::ptr r )
+    {
+      rec = r;
+    }
+    virtual void go()
+    {
+      fiber_message::ptr fm;
+      receive_message( fm ) ;
+      shared_ptr< my_message > mm( dynamic_pointer_cast< my_message >( fm ) );
+      if ( mm.get() != 0 )
+      {
+        cout << "receiver: ok: " << mm->my_int << endl;
+      }
+      else
+      {
+        cout << "receiver: Received trash" << endl;
+      }
+    }
 
-		fiber::ptr get_ptr()
-		{
-			return shared_from_this();
-		}
+    fiber::ptr get_ptr()
+    {
+      return shared_from_this();
+    }
 
-	private:
-		fiber::ptr rec;
+  private:
+    fiber::ptr rec;
 };
 
 int main(int,char**)
 {
-	sender::ptr sp( new sender() );
-	receiver::ptr rp( new receiver() );
+  sender::ptr sp( new sender() );
+  receiver::ptr rp( new receiver() );
 
-	sp->set_receiver( rp->get_ptr() );
-	rp->set_receiver( sp->get_ptr() );
+  sp->set_receiver( rp->get_ptr() );
+  rp->set_receiver( sp->get_ptr() );
 
-	sp->init();
-	rp->init();
+  sp->init();
+  rp->init();
 
-	master* m = master::create();
-	fiber::ptr spf = dynamic_pointer_cast< fiber >( sp );
-	fiber::ptr rpf = dynamic_pointer_cast< fiber >( rp );
-	m->spawn( rpf );
-	m->spawn( spf );
-	m->run();
-	cout << "main: ok." << endl;
-	return 0;
+  master* m = master::create();
+  fiber::ptr spf = dynamic_pointer_cast< fiber >( sp );
+  fiber::ptr rpf = dynamic_pointer_cast< fiber >( rp );
+  m->spawn( rpf );
+  m->spawn( spf );
+  m->run();
+  cout << "main: ok." << endl;
+  return 0;
 }

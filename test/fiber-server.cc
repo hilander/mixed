@@ -33,75 +33,75 @@ void s_err( int num, string& s );
 
 class f_listener : public fibers::fiber
 {
-	public:
+  public:
 
-		f_listener( int fd_, fiber::ptr parent_ )
-		: fd ( fd_ )
-		, parent( parent_ )
-		{}
+    f_listener( int fd_, fiber::ptr parent_ )
+    : fd ( fd_ )
+    , parent( parent_ )
+    {}
 
-		virtual void go()
-		{
-			const int init_message_size = 12;
+    virtual void go()
+    {
+      const int init_message_size = 12;
 
-			rw_buffer->resize( init_message_size );
+      rw_buffer->resize( init_message_size );
 
       ssize_t read_bytes =  init_message_size ;
 
-			if ( do_read( fd, read_bytes ) != read_bytes )
-			{
-				cout << "Server listener: end( prematurely )." << endl;
-				::close( fd );
-			}
-			else
-			{
-			}
-			string s = string( rw_buffer->begin(), rw_buffer->end() ).substr( 6, init_message_size );
-			std::stringstream sstr;
-			sstr << string( rw_buffer->begin(), rw_buffer->end() ).substr( 6, init_message_size );
-			int bytes = 0;
-			sstr >> bytes;
+      if ( do_read( fd, read_bytes ) != read_bytes )
+      {
+        cout << "Server listener: end( prematurely )." << endl;
+        ::close( fd );
+      }
+      else
+      {
+      }
+      string s = string( rw_buffer->begin(), rw_buffer->end() ).substr( 6, init_message_size );
+      std::stringstream sstr;
+      sstr << string( rw_buffer->begin(), rw_buffer->end() ).substr( 6, init_message_size );
+      int bytes = 0;
+      sstr >> bytes;
 
-			char sndbuf[1];
-			char recbuf[1];
-			rw_buffer->at( 0 ) = 42;
+      char sndbuf[1];
+      char recbuf[1];
+      rw_buffer->at( 0 ) = 42;
 
-			for ( int i = 0; i < bytes; i++ )
-			{
-				socket_write( 1 );
-				sndbuf[0] = rw_buffer->at( 0 );
-				socket_read( 1 );
-				recbuf[0] = rw_buffer->at( 0 );
-				if ( sndbuf[0] != recbuf[0] )
-				{
-					std::cout << "Server listener: Client response incorrect." << std::endl;
-					break;
-				}
-			}
-			cout << "Server listener: end." << endl;
-			::close( fd );
-		}
+      for ( int i = 0; i < bytes; i++ )
+      {
+        socket_write( 1 );
+        sndbuf[0] = rw_buffer->at( 0 );
+        socket_read( 1 );
+        recbuf[0] = rw_buffer->at( 0 );
+        if ( sndbuf[0] != recbuf[0] )
+        {
+          std::cout << "Server listener: Client response incorrect." << std::endl;
+          break;
+        }
+      }
+      cout << "Server listener: end." << endl;
+      ::close( fd );
+    }
 
-	private:
-		void socket_read( ssize_t bytes )
-		{
-			if ( do_read( fd, bytes ) != bytes )
-			{
-				//cout << "f_listener::socket_read(): exception" << endl;
-			}
-		}
+  private:
+    void socket_read( ssize_t bytes )
+    {
+      if ( do_read( fd, bytes ) != bytes )
+      {
+        //cout << "f_listener::socket_read(): exception" << endl;
+      }
+    }
 
-		void socket_write( ssize_t bytes )
-		{
-			if ( do_write( fd, bytes ) != bytes )
-			{
-				//cout << "f_listener::socket_write(): exception" << endl;
-			}
-		}
+    void socket_write( ssize_t bytes )
+    {
+      if ( do_write( fd, bytes ) != bytes )
+      {
+        //cout << "f_listener::socket_write(): exception" << endl;
+      }
+    }
 
-	private:
-		int fd;
-		fiber::fiber::ptr parent;
+  private:
+    int fd;
+    fiber::fiber::ptr parent;
 };
 
 class f_client : public fiber
@@ -114,49 +114,49 @@ class f_client : public fiber
     virtual void go()
     {
 
-			int max_opened = 100;
-			int sa = init_socket();
-			if ( sa < 0 )
-			{
-				return;
-			}
+      int max_opened = 100;
+      int sa = init_socket();
+      if ( sa < 0 )
+      {
+        return;
+      }
 
-			int opened_sockets;
-			for ( opened_sockets = 0; opened_sockets < max_opened;  )
-			{
-				int sw = wait_for_connection( sa );
+      int opened_sockets;
+      for ( opened_sockets = 0; opened_sockets < max_opened;  )
+      {
+        int sw = wait_for_connection( sa );
 
-				if ( sw <= 0 )
-				{
-					string error_name;
-					s_err( errno, error_name );
-					std::cout << "poller_client: accept() error: " << error_name << std::endl;
-					//return;
-				}
-				else
-				{
-					create_listener( sw );
-					opened_sockets++;
-				}
-			}
+        if ( sw <= 0 )
+        {
+          string error_name;
+          s_err( errno, error_name );
+          std::cout << "poller_client: accept() error: " << error_name << std::endl;
+          //return;
+        }
+        else
+        {
+          create_listener( sw );
+          opened_sockets++;
+        }
+      }
 
-			::close( sa );
-			std::cout << "Server: exiting. " << std::endl;
+      ::close( sa );
+      std::cout << "Server: exiting. " << std::endl;
     }
 
-	private:
+  private:
 
-		void create_listener( int listen_descriptor )
-		{
-			fiber::ptr l( new f_listener( listen_descriptor, shared_from_this() ) );
-			l->init();
-			spawn( l );
-			listeners.push_back( l );
-			//cout << "server: client created" << endl;
-		}
+    void create_listener( int listen_descriptor )
+    {
+      fiber::ptr l( new f_listener( listen_descriptor, shared_from_this() ) );
+      l->init();
+      spawn( l );
+      listeners.push_back( l );
+      //cout << "server: client created" << endl;
+    }
 
-		int init_socket()
-		{
+    int init_socket()
+    {
       ::protoent *pe = getprotobyname( "tcp" );
 
       sockaddr_in sar;
@@ -183,108 +183,108 @@ class f_client : public fiber
         std::cout << "fiber_server: bind() error: " << error_name << std::endl;
         return -1;
       }
-			return sa;
-		}
+      return sa;
+    }
 
-		int wait_for_connection( int sa )
-		{
-			int sw = 0;
-			sockaddr_in sadr;
-			socklen_t sadrlen = sizeof( sockaddr_in );
-			while ( ( sw = ::accept( sa, (::sockaddr*)&sadr, &sadrlen ) ) <= 0 )
-			{
-				if ( errno != EAGAIN )
-				{
-					string s;
-					s_err( errno, s );
-					cout << "accept error: " << s << endl;
-				}
-				yield();
-			}
-			return sw;
-		}
+    int wait_for_connection( int sa )
+    {
+      int sw = 0;
+      sockaddr_in sadr;
+      socklen_t sadrlen = sizeof( sockaddr_in );
+      while ( ( sw = ::accept( sa, (::sockaddr*)&sadr, &sadrlen ) ) <= 0 )
+      {
+        if ( errno != EAGAIN )
+        {
+          string s;
+          s_err( errno, s );
+          cout << "accept error: " << s << endl;
+        }
+        yield();
+      }
+      return sw;
+    }
 
   private:
     char* _addr;
-		std::list< fiber::fiber::ptr > listeners;
+    std::list< fiber::fiber::ptr > listeners;
 };
 
 void s_err( int num, string& s )
 {
   s.clear();
 
-	switch (num)
-	{
-		case EACCES:
-			s = string ( "EACCES" );
-			break;
+  switch (num)
+  {
+    case EACCES:
+      s = string ( "EACCES" );
+      break;
 
-		case EPERM:
-			s = string ( "EPERM" );
-			break;
+    case EPERM:
+      s = string ( "EPERM" );
+      break;
 
-		case EADDRINUSE:
-			s = string ( "EADDRINUSE" );
-			break;
+    case EADDRINUSE:
+      s = string ( "EADDRINUSE" );
+      break;
 
-		case EAFNOSUPPORT:
-			s = string ( "EAFNOSUPPORT" );
-			break;
+    case EAFNOSUPPORT:
+      s = string ( "EAFNOSUPPORT" );
+      break;
 
-		case EAGAIN :
-			s = string ( "EAGAIN" );
-			break;
+    case EAGAIN :
+      s = string ( "EAGAIN" );
+      break;
 
-		case EALREADY:
-			s = string ( "EALREADY" );
-			break;
+    case EALREADY:
+      s = string ( "EALREADY" );
+      break;
 
-		case EBADF :
-			s = string ( "EBADF" );
-			break;
+    case EBADF :
+      s = string ( "EBADF" );
+      break;
 
-		case ECONNREFUSED:
-			s = string ( "ECONNREFUSED" );
-			break;
+    case ECONNREFUSED:
+      s = string ( "ECONNREFUSED" );
+      break;
 
-		case EFAULT:
-			s = string ( "EFAULT" );
-			break;
+    case EFAULT:
+      s = string ( "EFAULT" );
+      break;
 
-		case EINPROGRESS:
-			s = string ( "EINPROGRESS" );
-			break;
+    case EINPROGRESS:
+      s = string ( "EINPROGRESS" );
+      break;
 
-		case EINTR:
-			s = string ( "EINTR" );
-			break;
-		case EISCONN:
-			s = string ( "EISCONN" );
-			break;
+    case EINTR:
+      s = string ( "EINTR" );
+      break;
+    case EISCONN:
+      s = string ( "EISCONN" );
+      break;
 
-		case ENETUNREACH:
-			s = string ( "ENETUNREACH" );
-			break;
+    case ENETUNREACH:
+      s = string ( "ENETUNREACH" );
+      break;
 
-		case ENOTSOCK:
-			s = string ( "ENOTSOCK" );
-			break;
+    case ENOTSOCK:
+      s = string ( "ENOTSOCK" );
+      break;
 
-		case ETIMEDOUT:
-			s = string ( "EACCES" );
-			break;
-	}
+    case ETIMEDOUT:
+      s = string ( "EACCES" );
+      break;
+  }
 }
 
 int main(int argc ,char* argv[])
 {
   signal( SIGPIPE, SIG_IGN );
   char loopback[] = "127.0.0.1";
-	master* mp = master::create();
+  master* mp = master::create();
 
-	f_client::ptr fcl( new f_client( ( argc == 2 ) ? argv[1] : loopback ) );
-	fiber::ptr cl = dynamic_pointer_cast< fiber >( fcl );
-	fcl->init();
+  f_client::ptr fcl( new f_client( ( argc == 2 ) ? argv[1] : loopback ) );
+  fiber::ptr cl = dynamic_pointer_cast< fiber >( fcl );
+  fcl->init();
   mp->spawn( cl );
   mp->run();
 

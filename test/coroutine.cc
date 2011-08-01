@@ -27,10 +27,10 @@ class my_coroutine : public coroutines::coroutine
     yield();
   }
 
-	virtual void start()
-	{
-		go();
-	}
+  virtual void start()
+  {
+    go();
+  }
 
    ~my_coroutine()
   {

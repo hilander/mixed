@@ -11,62 +11,62 @@
 
 namespace masters
 {
-	class master;
+  class master;
 }
 
 namespace workers
 {
-	class worker
-	{
-		public:
-			typedef std::tr1::shared_ptr< worker > ptr;
+  class worker
+  {
+    public:
+      typedef std::tr1::shared_ptr< worker > ptr;
 
-			static worker* create();
+      static worker* create();
 
-			virtual ~worker();
+      virtual ~worker();
 
-			void init();
+      void init();
 
-			void run();
+      void run();
 
-			void iteration();
+      void iteration();
 
-			void block_on_io( int f, fibers::fiber::ptr fp, fiber::current_state s );
+      void block_on_io( int f, fibers::fiber::ptr fp, fiber::current_state s );
 
-			void block_on_message( fibers::fiber::ptr fp );
+      void block_on_message( fibers::fiber::ptr fp );
 
-			void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
+      void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
-			void spawn( fibers::fiber::ptr& f );
+      void spawn( fibers::fiber::ptr& f );
 
-			bool read_for_master( std::tr1::shared_ptr< message_queues::message >& m );
+      bool read_for_master( std::tr1::shared_ptr< message_queues::message >& m );
 
-			void write_to_slave( std::tr1::shared_ptr< message_queues::message >& m );
+      void write_to_slave( std::tr1::shared_ptr< message_queues::message >& m );
 
-			int workload();
+      int workload();
 
-			void set_master( masters::master* m );
+      void set_master( masters::master* m );
 
-		private:
-			worker();
+    private:
+      worker();
 
-			void do_epolls();
+      void do_epolls();
 
-			void process_incoming_message_queues();
-			void process_service_message( message_queues::message::ptr& m );
-			void pass_message_to_fiber( std::tr1::shared_ptr< message_queues::message >& m );
-			bool finished();
+      void process_incoming_message_queues();
+      void process_service_message( message_queues::message::ptr& m );
+      void pass_message_to_fiber( std::tr1::shared_ptr< message_queues::message >& m );
+      bool finished();
 
-			schedulers::scheduler::ptr sched;
-			message_queues::message_queue::ptr pipe;
-			epollers::epoller::ptr io_facility;
+      schedulers::scheduler::ptr sched;
+      message_queues::message_queue::ptr pipe;
+      epollers::epoller::ptr io_facility;
 
-			std::map< int, fibers::fiber::ptr > blocked_fds;
-			std::map< int, fibers::fiber::ptr > blocked_msgs;
-			masters::master* my_master;
+      std::map< int, fibers::fiber::ptr > blocked_fds;
+      std::map< int, fibers::fiber::ptr > blocked_msgs;
+      masters::master* my_master;
 
-			bool master_allowed;
-	};
+      bool master_allowed;
+  };
 }
 
 #endif
