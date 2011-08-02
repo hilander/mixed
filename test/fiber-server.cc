@@ -48,6 +48,11 @@ class f_listener : public fibers::fiber
 
       ssize_t read_bytes =  init_message_size ;
 
+      ::linger l;
+      l.l_linger = 0;
+      l.l_onoff = 1;
+      ::setsockopt( sa, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
+
       if ( do_read( fd, read_bytes ) != read_bytes )
       {
         cout << "Server listener: end( prematurely )." << endl;
@@ -167,6 +172,10 @@ class f_client : public fiber
       int sa = socket( AF_INET, SOCK_STREAM, pe->p_proto );
       int orig_flags = fcntl( sa, F_GETFL );
       fcntl( sa, F_SETFL, orig_flags | O_NONBLOCK );
+      ::linger l;
+      l.l_linger = 0;
+      l.l_onoff = 1;
+      ::setsockopt( sa, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
 
       if ( bind( sa, (sockaddr*)&sar, sizeof(sockaddr_in) ) != 0 )
       {
