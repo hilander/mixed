@@ -51,7 +51,7 @@ class f_listener : public fibers::fiber
       ::linger l;
       l.l_linger = 0;
       l.l_onoff = 1;
-      ::setsockopt( sa, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
+      ::setsockopt( fd, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
 
       if ( do_read( fd, read_bytes ) != read_bytes )
       {
@@ -83,7 +83,7 @@ class f_listener : public fibers::fiber
           break;
         }
       }
-      cout << "Server listener: end." << endl;
+      //cout << "Server listener: end." << endl;
       ::close( fd );
     }
 
@@ -119,7 +119,7 @@ class f_client : public fiber
     virtual void go()
     {
 
-      int max_opened = 100;
+      int max_opened = 1000;
       int sa = init_socket();
       if ( sa < 0 )
       {
@@ -143,10 +143,11 @@ class f_client : public fiber
           create_listener( sw );
           opened_sockets++;
         }
+      //std::cout << "."; cout.flush();
       }
 
       ::close( sa );
-      std::cout << "Server: exiting. " << std::endl;
+      //std::cout << "Server: exiting. " << std::endl;
     }
 
   private:
@@ -172,10 +173,6 @@ class f_client : public fiber
       int sa = socket( AF_INET, SOCK_STREAM, pe->p_proto );
       int orig_flags = fcntl( sa, F_GETFL );
       fcntl( sa, F_SETFL, orig_flags | O_NONBLOCK );
-      ::linger l;
-      l.l_linger = 0;
-      l.l_onoff = 1;
-      ::setsockopt( sa, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
 
       if ( bind( sa, (sockaddr*)&sar, sizeof(sockaddr_in) ) != 0 )
       {
@@ -185,7 +182,7 @@ class f_client : public fiber
         return -1;
       }
 
-      if ( listen( sa, 10 ) != 0 )
+      if ( listen( sa, 1000 ) != 0 )
       {
         string error_name;
         s_err( errno, error_name );
@@ -285,9 +282,16 @@ void s_err( int num, string& s )
   }
 }
 
+static void myaction( int action )
+{
+  cout << "got " << action << endl;
+  ::exit(-1);
+}
+
 int main(int argc ,char* argv[])
 {
   signal( SIGPIPE, SIG_IGN );
+  signal( SIGINT, &myaction );
   char loopback[] = "127.0.0.1";
   master* mp = master::create();
 
@@ -296,6 +300,7 @@ int main(int argc ,char* argv[])
   fcl->init();
   mp->spawn( cl );
   mp->run();
+  cout << "Main process: exiting." << endl;
 
   return 0;
 }

@@ -164,7 +164,7 @@ class server_socket
       }
 
       // listen:
-      if ( listen( fd, 10 ) != 0 )
+      if ( ::listen( fd, 1000 ) != 0 )
       {
         cout << "fiber_server: listen() error" << endl;
         ::close( fd );
@@ -182,6 +182,6 @@ int main(int,char**)
 {
   ::signal( SIGPIPE, SIG_IGN );
   server_socket::ptr p = server_socket::create( 8100 );
-  p->go( 100 );
+  p->go( 1000 );
   return 0;
 }

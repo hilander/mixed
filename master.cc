@@ -18,9 +18,13 @@ using namespace workers;
 #include "master.hh"
 using namespace masters;
 
+#include <iostream>
+using namespace std;
 void* worker_pthread_starter( worker* w )
 {
+  cout << "Worker pthread: Start." << endl;
   w->run();
+  cout << "Worker pthread: Exit." << endl;
   return 0;
 }
 
@@ -33,6 +37,7 @@ master* master::create()
 
 bool master::its_time_to_end()
 {
+  workload = workload > 0 ? workload : 0;
   int total_workload = own_slave->workload() + workload;
 
   vector< worker::ptr >::iterator vi = slaves.begin();
@@ -44,8 +49,16 @@ bool master::its_time_to_end()
     {
       worker::ptr tp = *vi;
       total_workload += tp->workload();
+      //cout << "#"; cout.flush();
     }
   }
+
+  /*
+  if ( total_workload == 0 )
+  {
+    cout << "total_workload = 0" << endl;
+  }
+  */
 
   return total_workload == 0;
 }
@@ -57,6 +70,9 @@ void master::run()
     read_message_queues();
     own_slave->iteration();
   }
+  //cout << "own_slave: workload = " << own_slave->workload() << endl;
+  //cout << "Master: workload = " << workload << endl;
+  //cout << "Master: Exit." << endl;
 }
 
 void master::init()

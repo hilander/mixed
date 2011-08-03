@@ -72,7 +72,7 @@ class f_client : public fiber
       //cout << "."; cout.flush();
       }
       ::close( sa );
-      cout << "client end" << endl;
+      //cout << "client end" << endl;
     }
 
   private:
@@ -89,21 +89,29 @@ class f_client : public fiber
       fcntl( sa, F_SETFL, orig_flags | O_NONBLOCK );
 
       int sw = ::connect( sa, (const sockaddr*)&sar, sizeof(sar) );
-      
-      while ( sw != 0 && errno == EINPROGRESS )
-      {
-        sw = ::connect( sa, (const sockaddr*)&sar, sizeof(sar) );
-        yield();
-      }
 
+      if ( sw == 0 )
+      {
+        ::linger l;
+        l.l_linger = 0;
+        l.l_onoff = 1;
+        ::setsockopt( sa, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
+
+        return sa;
+      }
+      
       do_connect( sa );
 
-      if ( sw != 0 )
+      if ( connect_status != 0 )
       {
         ::close( sa );
-        std::cout << "poller_client: connect() error: " << s_err( errno ) << " (" << errno << ")" << std::endl;
         return -1;
       }
+
+      ::linger l;
+      l.l_linger = 0;
+      l.l_onoff = 1;
+      ::setsockopt( sa, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
       return sa;
     }
 
@@ -212,6 +220,7 @@ int main(int argc ,char* argv[])
     mp->spawn( fcl[i] );
   }
   mp->run();
+  cout << "Main process: exiting." << endl;
 
   return 0;
 }

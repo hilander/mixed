@@ -107,6 +107,11 @@ void fiber::set_last_accepted_fd( int f )
   last_accepted_fd = f;
 }
 
+void fiber::set_connect_status( int status )
+{
+  connect_status = status;
+}
+
 void fiber::set_last_read( ssize_t s )
 {
   last_read = s;

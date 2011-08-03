@@ -139,10 +139,10 @@ void worker::do_epolls()
         case fiber::BLOCKED_FOR_ACCEPT:
           if ( wev.events & EPOLLIN )
           {
-            ::sockaddr_in sin;
-            ::socklen_t sin_size = sizeof( ::sockaddr_in );
-            int afd = ::accept( fib->first, (::sockaddr*)&sin, &sin_size ); // C-call -- C-cast ;P
-            if ( afd > 0 )
+            //::sockaddr_in sin;
+            //::socklen_t sin_size = sizeof( ::sockaddr_in );
+            int afd = ::accept( fib->first, 0, 0 ); //(::sockaddr*)&sin, &sin_size ); // C-call -- C-cast ;P
+            if ( afd >= 0 )
             {
               f->set_last_accepted_fd( afd );
               f->set_state( fiber::READY );
@@ -154,18 +154,21 @@ void worker::do_epolls()
 
         case fiber::BLOCKED_FOR_CONNECT:
           //cout << "worker: connect " << wev.events << ": " << ( wev.events & ( EPOLLIN | EPOLLOUT ) ) << endl;
-          if ( wev.events & ( EPOLLIN | EPOLLOUT ) )
+          if ( wev.events & ( /*EPOLLIN |*/ EPOLLOUT ) )
           {
             if ( wev.events & EPOLLERR )
             {
-              cout << "CONNECT: error: " << errno << endl;
+              //cout << "CONNECT: error: " << errno << endl;
+              f->set_connect_status( errno );
             }
             else
             {
-              f->set_state( fiber::READY );
-              blocked_fds.erase( fib );
-              io_facility->del( wev.data.fd );
+              f->set_connect_status( 0 );
             }
+
+            f->set_state( fiber::READY );
+            blocked_fds.erase( fib );
+            io_facility->del( wev.data.fd );
           }
           break;
 

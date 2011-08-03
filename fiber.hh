@@ -71,6 +71,8 @@ namespace fibers
 
       void set_last_accepted_fd( int f );
 
+      void set_connect_status( int status );
+
       void set_last_read( ssize_t s );
 
       void set_last_write( ssize_t s );
@@ -86,6 +88,8 @@ namespace fibers
       std::list< std::tr1::shared_ptr< message_queues::fiber_message > > message_buffer;
 
       std::tr1::shared_ptr< std::vector< char > > rw_buffer;
+
+      int connect_status;
 
     private:
       current_state state;
