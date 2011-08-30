@@ -30,6 +30,7 @@ using namespace workers;
 
   worker::worker()
 : master_allowed( false )
+, unspawned_fibers( 0 )
 {
 }
 
@@ -60,7 +61,7 @@ void worker::run()
 
 bool worker::finished()
 {
-  return master_allowed && ( sched->workload() == 0 );
+  return master_allowed && ( workload() == 0 );
 }
 
 void worker::iteration()
@@ -72,7 +73,7 @@ void worker::iteration()
 
 int worker::workload()
 {
-  return sched->workload();
+  return sched->workload() + unspawned_fibers;
 }
 
 void worker::set_master( masters::master* m )
@@ -282,9 +283,10 @@ void worker::send_message( fiber_message::ptr m )
 
 void worker::spawn( fiber::ptr& f )
 {
-  service_message::ptr m( new service_message( service_message::SPAWN ) );
-  message::ptr sm = dynamic_pointer_cast< message >( m );
+  service_message::ptr m;
+  m.reset( new service_message( service_message::SPAWN ) );
   m->fiber_to_spawn = f;
+  message::ptr sm = dynamic_pointer_cast< message >( m );
   pipe->write_to_master( sm );
 }
 

@@ -66,6 +66,7 @@ namespace workers
       masters::master* my_master;
 
       bool master_allowed;
+      int unspawned_fibers;
   };
 }
 

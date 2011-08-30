@@ -145,6 +145,7 @@ void master::read_from_slave( worker::ptr s )
           worker::ptr s = get_worker_with_smallest_workload();
           s->write_to_slave( m );
           workload++;
+          cout << "spawn\n";
           break;
         }
 

@@ -57,6 +57,7 @@ class f_listener : public fibers::fiber
       {
         cout << "Server listener: end( prematurely )." << endl;
         ::close( fd );
+        return;
       }
       else
       {
@@ -182,7 +183,7 @@ class f_client : public fiber
         return -1;
       }
 
-      if ( listen( sa, 1000 ) != 0 )
+      if ( listen( sa, 1004 ) != 0 )
       {
         string error_name;
         s_err( errno, error_name );
@@ -194,6 +195,8 @@ class f_client : public fiber
 
     int wait_for_connection( int sa )
     {
+      return do_accept( sa );
+      /*
       int sw = 0;
       sockaddr_in sadr;
       socklen_t sadrlen = sizeof( sockaddr_in );
@@ -208,6 +211,7 @@ class f_client : public fiber
         yield();
       }
       return sw;
+      */
     }
 
   private:
