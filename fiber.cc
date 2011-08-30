@@ -1,3 +1,5 @@
+#include <arpa/inet.h>
+
 #include <tr1/memory>
 using namespace std::tr1;
 
@@ -55,10 +57,30 @@ int fiber::do_accept( int f )
   return last_accepted_fd;
 }
 
-void fiber::do_connect( int f )
+void fiber::do_connect( int f, ::sockaddr_in& s )
 {
-  owner->block_on_io( f, shared_from_this(), BLOCKED_FOR_CONNECT );
+  owner->insert_fd( f );
+
+  int sw = ::connect( f, (const sockaddr*)&s, sizeof(s) );
+
+  if ( sw == 0 )
+  {
+    ::linger l;
+    l.l_linger = 0;
+    l.l_onoff = 1;
+    ::setsockopt( f, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
+
+    return;
+  }
+      
+  owner->do_connect( f, shared_from_this(), BLOCKED_FOR_CONNECT );
   yield();
+}
+
+void fiber::do_close( int f )
+{
+  owner->remove_fd( f );
+  ::close( f );
 }
 
 void fiber::send_message( fiber_message::ptr& m )

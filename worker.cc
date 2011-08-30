@@ -180,6 +180,22 @@ void worker::do_epolls()
   }
 }
 
+void worker::insert_fd( int f )
+{
+  io_facility->add( f );
+}
+
+void worker::remove_fd( int f )
+{
+  io_facility->del( f );
+}
+
+void worker::do_connect( int f, fiber::ptr fp, fiber::current_state s )
+{
+  fp->set_state( s );
+  blocked_fds[ f ] = fp;
+}
+
 void worker::block_on_io( int f, fiber::ptr fp, fiber::current_state s )
 {
   fp->set_state( s );

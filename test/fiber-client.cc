@@ -71,7 +71,7 @@ class f_client : public fiber
         do_write( sa, 1 );
       //cout << "."; cout.flush();
       }
-      ::close( sa );
+      do_close( sa );
       //cout << "client end" << endl;
     }
 
@@ -88,25 +88,18 @@ class f_client : public fiber
       int orig_flags = fcntl( sa, F_GETFL );
       fcntl( sa, F_SETFL, orig_flags | O_NONBLOCK );
 
-      int sw = ::connect( sa, (const sockaddr*)&sar, sizeof(sar) );
-
-      if ( sw == 0 )
+      do
       {
-        ::linger l;
-        l.l_linger = 0;
-        l.l_onoff = 1;
-        ::setsockopt( sa, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
+        do_connect( sa, sar );
 
-        return sa;
-      }
-      
-      do_connect( sa );
-
-      if ( connect_status != 0 )
-      {
-        ::close( sa );
-        return -1;
-      }
+        /*
+           if ( connect_status != 0 )
+           {
+           do_close( sa );
+           return -1;
+           }
+           */
+      } while ( connect_status != 0 ) ;
 
       ::linger l;
       l.l_linger = 0;
@@ -220,7 +213,7 @@ int main(int argc ,char* argv[])
     mp->spawn( fcl[i] );
   }
   mp->run();
-  cout << "Main process: exiting." << endl;
+  //cout << "Main process: exiting." << endl;
 
   return 0;
 }

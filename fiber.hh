@@ -4,6 +4,7 @@
 #include <tr1/memory>
 #include <vector>
 #include <list>
+#include <arpa/inet.h>
 
 #include "coroutine.hh"
 
@@ -51,7 +52,9 @@ namespace fibers
 
       int do_accept( int f );
 
-      void do_connect( int f );
+      void do_connect( int f, ::sockaddr_in& s );
+
+      void do_close( int f );
 
       void send_message( std::tr1::shared_ptr< message_queues::fiber_message >& m );
 

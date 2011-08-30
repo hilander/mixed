@@ -1,57 +1,99 @@
-#include <sys/socket.h>
-#include <netdb.h>
-#include <signal.h>
-
-#include <string>
-#include <sstream>
-#include <iostream>
 #include <tr1/memory>
-#include <list>
-#include <algorithm>
-using namespace std;
 using namespace std::tr1;
 
-#include <epoller.hh>
-using namespace epollers;
+#include <iostream>
+#include <sstream>
+#include <algorithm>
+using namespace std;
+
+//#include <signal.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <sys/epoll.h>
+#include <errno.h>
+#include <pthread.h>
+#include <memory>
+#include <vector>
+#include <unistd.h>
+#include <fcntl.h>
+#include <signal.h>
+
+#include <list>
+using namespace std;
+
+#include <tr1/memory>
+using namespace std::tr1;
+
+const int default_port = 8100;
+
+void s_err( int num, string& s );
 
 class f_listener
 {
   public:
-    f_listener( int f )
-    : fd( f )
-    {
-    }
 
-    void go()
-    {
-      char buf[12];
-      ssize_t read_bytes = 12;
+    typedef shared_ptr< f_listener > ptr;
+    f_listener( int fd_ )
+    : fd ( fd_ )
+    {}
 
-      ::read( fd, buf, read_bytes );
-      string s = string(buf).substr(6,12);
+    virtual void go()
+    {
+      const int init_message_size = 12;
+
+      ssize_t read_bytes =  init_message_size ;
+
+      ::linger l;
+      l.l_linger = 0;
+      l.l_onoff = 1;
+      ::setsockopt( fd, SOL_SOCKET, SO_LINGER, &l, sizeof(::linger) );
+
+      char tbuf[12];
+      if ( ::read( fd, tbuf, read_bytes ) != read_bytes )
+      {
+        cout << "Server listener: end( prematurely )." << endl;
+        ::close( fd );
+        return;
+      }
+
+      string message_header( tbuf );
+
       std::stringstream sstr;
-      sstr << string(buf).substr(6,12);
+      try
+      {
+      sstr << message_header.substr( 6, init_message_size );
+      }
+      catch ( ... )
+      {
+        cout << "Server listener: end( prematurely )." << endl;
+        ::close( fd );
+        return;
+      }
       int bytes = 0;
       sstr >> bytes;
 
       char sndbuf[1];
       char recbuf[1];
-      sndbuf[0] = 42;
+      sndbuf[1] = 42;
+
       for ( int i = 0; i < bytes; i++ )
       {
-        ::write( fd, sndbuf, 1 );
-        ::read( fd, recbuf, 1 );
+        int tmpcnt = 0;
+        do { tmpcnt = ::read( fd, sndbuf, 1 ); if ( tmpcnt == 0 ) break; } while ( tmpcnt != 1 ) ;
+        if ( tmpcnt == 0 ) { cout << "server: wtf(read)\n" ; break; }
+
+        tmpcnt = 0;
+        do { tmpcnt = ::write( fd, recbuf, 1 ); if ( tmpcnt == 0 ) break; } while ( tmpcnt != 1 ) ;
+        if ( tmpcnt == 0 ) { cout << "server: wtf(write)\n" ; break; }
+
         if ( sndbuf[0] != recbuf[0] )
         {
           std::cout << "Server listener: Client response incorrect." << std::endl;
           break;
         }
       }
-
-      while ( ::read( fd, recbuf, 1 ) != 0 )
-      {
-      }
-      //std::cout << "Server listener: end." << std::endl;
+      //cout << "Server listener: end." << endl;
       ::close( fd );
     }
 
@@ -59,36 +101,27 @@ class f_listener
     int fd;
 };
 
-static void* unified_starter( f_listener* s )
+void* listener_starter( void* vp )
 {
-  s->go();
+  f_listener* lp = reinterpret_cast< f_listener* >( vp );
+  lp->go();
   return 0;
 }
 
-class wait_for_end
+class f_client
 {
   public:
-  void operator() ( shared_ptr< ::pthread_t > p )
-  {
-    ::pthread_join( *p, 0 );
-  }
-};
+    typedef shared_ptr< f_client > ptr;
+    f_client( char* address_c_str )
+      : _addr( address_c_str )
+    {}
 
-class server_socket
-{
-  public:
-    typedef shared_ptr< server_socket > ptr;
-
-    static ptr create( int p )
+    virtual void go()
     {
-      shared_ptr< server_socket > ss( new server_socket( p ) );
-      ss->init();
-      return ss;
-    }
 
-    void go( int max_opened )
-    {
-      if ( fd < 0 )
+      int max_opened = 1000;
+      int sa = init_socket();
+      if ( sa < 0 )
       {
         return;
       }
@@ -96,92 +129,168 @@ class server_socket
       int opened_sockets;
       for ( opened_sockets = 0; opened_sockets < max_opened;  )
       {
-        int sw = wait_for_connection( fd );
+        int sw = wait_for_connection( sa );
 
         if ( sw <= 0 )
         {
-          cout << "fiber_server: listen() error" << endl;
-          ::close( fd );
-          return;
+          string error_name;
+          s_err( errno, error_name );
+          std::cout << "poller_client: accept() error: " << error_name << std::endl;
+          //return;
         }
         else
         {
           create_listener( sw );
           opened_sockets++;
+          cout << opened_sockets << " "; cout.flush();
         }
+      //std::cout << "."; cout.flush();
       }
 
-      wait_for_end we;
-      for_each( threads.begin(), threads.end(), we );
-
-      cout << "fiber_server::go(): ok" << endl;
-      ::close( fd );;
-      std::cout << "Server: exiting. " << std::endl;
+      ::close( sa );
+      //std::cout << "Server: exiting. " << std::endl;
     }
 
   private:
-    server_socket( int p )
-      : fd( 0 )
-      , port( p )
+
+    void create_listener( int listen_descriptor )
     {
+      f_listener::ptr l( new f_listener( listen_descriptor ) );
+      shared_ptr< ::pthread_t > pp( new ::pthread_t );
+      ::pthread_create( pp.get()
+                      , 0
+                      , &listener_starter
+                      , l.get() );
+      pps.push_back( pp );
+      listeners.push_back( l );
+      //cout << "server: client created" << endl;
+    }
+
+    int init_socket()
+    {
+      ::protoent *pe = getprotobyname( "tcp" );
+
+      sockaddr_in sar;
+      sar.sin_family = AF_INET;
+      sar.sin_addr.s_addr = INADDR_ANY;
+      sar.sin_port = htons( default_port );
+
+      int sa = socket( AF_INET, SOCK_STREAM, pe->p_proto );
+
+      if ( bind( sa, (sockaddr*)&sar, sizeof(sockaddr_in) ) != 0 )
+      {
+        string error_name;
+        s_err( errno, error_name );
+        std::cout << "fiber_server: bind() error: " << error_name << std::endl;
+        return -1;
+      }
+
+      if ( listen( sa, 1004 ) != 0 )
+      {
+        string error_name;
+        s_err( errno, error_name );
+        std::cout << "fiber_server: bind() error: " << error_name << std::endl;
+        return -1;
+      }
+      return sa;
     }
 
     int wait_for_connection( int sa )
     {
-      ::sockaddr_in sd;
-      ::socklen_t sl = sizeof( ::sockaddr_in );
-      return ::accept( sa, ( ::sockaddr* )&sd, &sl );
+      sockaddr_in sadr;
+      socklen_t sadrlen = sizeof( sockaddr_in );
+      return ::accept( sa, (::sockaddr*)&sadr, &sadrlen );
     }
 
-    void create_listener( int listen_descriptor )
-    {
-      shared_ptr< f_listener > l( new f_listener( listen_descriptor ) );
-      shared_ptr< ::pthread_t > tp( new ::pthread_t() );
-      pthread_create( tp.get()
-                    , 0
-                    , reinterpret_cast< void* (*)(void*) >( &unified_starter )
-                    , static_cast< void* >( l.get() ) );
-      threads.push_back( tp );
-      listeners.push_back( l );
-    }
-
-    void init()
-    {
-      // create socket:
-      ::protoent* pe( ::getprotobyname( "tcp" ) );
-      fd = ::socket( AF_INET, SOCK_STREAM, pe->p_proto );
-
-      // bind:
-      ::sockaddr_in sar;
-      sar.sin_family = AF_INET;
-      sar.sin_addr.s_addr = INADDR_ANY;
-      sar.sin_port = htons( port );
-      if ( ::bind( fd, reinterpret_cast< sockaddr* >( &sar ), sizeof( ::sockaddr_in ) ) != 0 )
-      {
-        cout << "fiber_server: bind() error" << endl;
-        ::close( fd );
-        return;
-      }
-
-      // listen:
-      if ( ::listen( fd, 1000 ) != 0 )
-      {
-        cout << "fiber_server: listen() error" << endl;
-        ::close( fd );
-        return;
-      }
-    }
-
-    int fd;
-    int port;
-    list< shared_ptr< ::pthread_t > > threads;
-    list< shared_ptr< f_listener > > listeners;
+  private:
+    char* _addr;
+    std::list< shared_ptr< ::pthread_t > > pps;
+    std::list< f_listener::ptr > listeners;
 };
 
-int main(int,char**)
+void s_err( int num, string& s )
 {
-  ::signal( SIGPIPE, SIG_IGN );
-  server_socket::ptr p = server_socket::create( 8100 );
-  p->go( 1000 );
+  s.clear();
+
+  switch (num)
+  {
+    case EACCES:
+      s = string ( "EACCES" );
+      break;
+
+    case EPERM:
+      s = string ( "EPERM" );
+      break;
+
+    case EADDRINUSE:
+      s = string ( "EADDRINUSE" );
+      break;
+
+    case EAFNOSUPPORT:
+      s = string ( "EAFNOSUPPORT" );
+      break;
+
+    case EAGAIN :
+      s = string ( "EAGAIN" );
+      break;
+
+    case EALREADY:
+      s = string ( "EALREADY" );
+      break;
+
+    case EBADF :
+      s = string ( "EBADF" );
+      break;
+
+    case ECONNREFUSED:
+      s = string ( "ECONNREFUSED" );
+      break;
+
+    case EFAULT:
+      s = string ( "EFAULT" );
+      break;
+
+    case EINPROGRESS:
+      s = string ( "EINPROGRESS" );
+      break;
+
+    case EINTR:
+      s = string ( "EINTR" );
+      break;
+    case EISCONN:
+      s = string ( "EISCONN" );
+      break;
+
+    case ENETUNREACH:
+      s = string ( "ENETUNREACH" );
+      break;
+
+    case ENOTSOCK:
+      s = string ( "ENOTSOCK" );
+      break;
+
+    case ETIMEDOUT:
+      s = string ( "EACCES" );
+      break;
+  }
+}
+
+static void myaction( int action )
+{
+  cout << "got " << action << endl;
+  ::exit(-1);
+}
+
+int main(int argc ,char* argv[])
+{
+  signal( SIGPIPE, SIG_IGN );
+  signal( SIGINT, &myaction );
+  char loopback[] = "127.0.0.1";
+
+  f_client::ptr fcl( new f_client( ( argc == 2 ) ? argv[1] : loopback ) );
+  fcl->go();
+  cout << "Main process: exiting." << endl;
+
   return 0;
 }
+

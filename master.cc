@@ -22,9 +22,7 @@ using namespace masters;
 using namespace std;
 void* worker_pthread_starter( worker* w )
 {
-  cout << "Worker pthread: Start." << endl;
   w->run();
-  cout << "Worker pthread: Exit." << endl;
   return 0;
 }
 
@@ -145,7 +143,7 @@ void master::read_from_slave( worker::ptr s )
           worker::ptr s = get_worker_with_smallest_workload();
           s->write_to_slave( m );
           workload++;
-          cout << "spawn\n";
+          //cout << "spawn\n";
           break;
         }
 

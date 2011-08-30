@@ -56,7 +56,7 @@ class f_listener : public fibers::fiber
       if ( do_read( fd, read_bytes ) != read_bytes )
       {
         cout << "Server listener: end( prematurely )." << endl;
-        ::close( fd );
+        do_close( fd );
         return;
       }
       else
@@ -74,10 +74,16 @@ class f_listener : public fibers::fiber
 
       for ( int i = 0; i < bytes; i++ )
       {
-        socket_write( 1 );
+        int tmpcnt = 0;
+        do { tmpcnt = do_read( fd, 1 ); if ( tmpcnt == 0 ) break; } while ( tmpcnt != 1 ) ;
+        if ( tmpcnt == 0 ) { cout << "server: wtf(read)\n" ; break; }
         sndbuf[0] = rw_buffer->at( 0 );
-        socket_read( 1 );
+
+        tmpcnt = 0;
+        do { tmpcnt = do_write( fd, 1 ); if ( tmpcnt == 0 ) break; } while ( tmpcnt != 1 ) ;
+        if ( tmpcnt == 0 ) { cout << "server: wtf(write)\n" ; break; }
         recbuf[0] = rw_buffer->at( 0 );
+
         if ( sndbuf[0] != recbuf[0] )
         {
           std::cout << "Server listener: Client response incorrect." << std::endl;
@@ -85,24 +91,7 @@ class f_listener : public fibers::fiber
         }
       }
       //cout << "Server listener: end." << endl;
-      ::close( fd );
-    }
-
-  private:
-    void socket_read( ssize_t bytes )
-    {
-      if ( do_read( fd, bytes ) != bytes )
-      {
-        //cout << "f_listener::socket_read(): exception" << endl;
-      }
-    }
-
-    void socket_write( ssize_t bytes )
-    {
-      if ( do_write( fd, bytes ) != bytes )
-      {
-        //cout << "f_listener::socket_write(): exception" << endl;
-      }
+      do_close( fd );
     }
 
   private:
@@ -143,11 +132,12 @@ class f_client : public fiber
         {
           create_listener( sw );
           opened_sockets++;
+          cout << opened_sockets << " "; cout.flush();
         }
       //std::cout << "."; cout.flush();
       }
 
-      ::close( sa );
+      do_close( sa );
       //std::cout << "Server: exiting. " << std::endl;
     }
 

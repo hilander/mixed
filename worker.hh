@@ -31,7 +31,13 @@ namespace workers
 
       void iteration();
 
+      void insert_fd( int f );
+
+      void remove_fd( int f );
+
       void block_on_io( int f, fibers::fiber::ptr fp, fiber::current_state s );
+
+      void do_connect( int f, fiber::ptr fp, fiber::current_state s );
 
       void block_on_message( fibers::fiber::ptr fp );
 
