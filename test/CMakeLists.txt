@@ -1,10 +1,13 @@
 # tests
 add_executable ( coroutine coroutine.cc )
-#target_link_libraries ( coroutine pthread )
-target_link_libraries ( coroutine libmixed )
+target_link_libraries ( coroutine 
+  pthread
+  libmixed
+  gtest
+)
+add_test( coroutine ${CMAKE_BINARY_DIR}/bin/coroutine )
 
 add_executable ( fiber fiber.cc )
-#target_link_libraries ( coroutine pthread )
 target_link_libraries ( fiber libmixed )
 
 add_executable ( private_list private_list.cc )

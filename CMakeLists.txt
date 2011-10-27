@@ -21,6 +21,10 @@ set ( PROJECT_INC_DIR ${PROJECT_SOURCE_DIR} )
 #      ${PROJECT_SOURCE_DIR}/test 
 #    )
 
+enable_testing()
+
+include(test/gtest.cmake)
+
 include_directories ( ${PROJECT_INC_DIR} )
 #foreach ( DIR ${SUBDIRECTORIES} )
 #  add_subdirectory ( ${DIR} )

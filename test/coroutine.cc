@@ -1,6 +1,7 @@
 #include <iostream>
 #include <coroutine.hh>
 #include <tr1/memory>
+#include <gtest/gtest.h>
 
 using namespace std;
 using namespace std::tr1;
@@ -21,9 +22,9 @@ class my_coroutine : public coroutines::coroutine
 
   virtual void go()
   {
-    cout << "ok. gone" << endl;
+    //cout << "ok. gone" << endl;
     yield();
-    cout << "ok. gone for the second time" << endl;
+    //cout << "ok. gone for the second time" << endl;
     yield();
   }
 
@@ -38,7 +39,7 @@ class my_coroutine : public coroutines::coroutine
 
 };
 
-int main(int,char**)
+TEST(Coroutine, RunYield)
 {
   char stack[16384];
   ::ucontext_t ctx;
@@ -49,6 +50,11 @@ int main(int,char**)
   coroutine::ptr c = my_coroutine::get();
   c->run( &ctx );
   c->run( &ctx );
-  cout << "main thread: done." << endl;
-  return 0;
+  //cout << "main thread: done." << endl;
+}
+
+int main( int argc, char* argv[] )
+{
+  ::testing::InitGoogleTest( &argc, argv );
+  return RUN_ALL_TESTS();
 }
