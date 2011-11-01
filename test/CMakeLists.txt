@@ -7,11 +7,15 @@ target_link_libraries ( coroutine
 )
 add_test( coroutine ${CMAKE_BINARY_DIR}/bin/coroutine )
 
+add_executable ( private_list private_list.cc )
+target_link_libraries ( private_list 
+  libmixed 
+  gtest
+)
+add_test( private_list ${CMAKE_BINARY_DIR}/bin/private_list )
+
 add_executable ( fiber fiber.cc )
 target_link_libraries ( fiber libmixed )
-
-add_executable ( private_list private_list.cc )
-target_link_libraries ( private_list libmixed )
 
 add_executable ( message_queue message_queue.cc )
 target_link_libraries ( message_queue libmixed )

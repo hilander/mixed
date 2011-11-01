@@ -8,7 +8,9 @@ using namespace std::tr1;
 #include <message_queue.hh>
 using namespace message_queues;
 
-int main(int,char**)
+#include <gtest/gtest.h>
+
+TEST( PrivateList, PushAndTop )
 {
   const int msize = 10;
 
@@ -24,24 +26,17 @@ int main(int,char**)
   pl.push( messages[0] );
   
   shared_ptr< message >  m;
-  if ( pl.top( m ) )
-  {
-    cout << "push+top. Got: " << m->m_type << endl;
-  }
-  if ( pl.top( m ) )
-  {
-    cout << "push+top. error" << endl;
-  }
-  else
-  {
-    cout << "push+top+top. ok" << endl;
-  }
+  EXPECT_TRUE( pl.top( m ) );
+  EXPECT_FALSE( pl.top( m ) );
+
   pl.push( messages[0] );
   pl.top( m );
   pl.push( messages[1] );
-  if ( pl.top( m ) )
-  {
-    cout << "push+top. Got: " << m->m_type << endl;
-  }
-  return 0;
+  EXPECT_TRUE( pl.top( m ) );
+}
+
+int main( int argc, char* argv[] )
+{
+  ::testing::InitGoogleTest( &argc, argv );
+  return RUN_ALL_TESTS();
 }
