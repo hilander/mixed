@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fiber.hh>
+#include <gtest/gtest.h>
 
 using namespace std;
 using namespace fibers;
@@ -9,11 +10,11 @@ class myfiber : public fiber
   public:
     virtual void go()
     {
-      cout << "myfiber done." << endl;
+      //cout << "myfiber done." << endl;
     }
 };
 
-int main(int,char**)
+TEST( Fiber, Run )
 {
   myfiber mf;
   mf.init();
@@ -23,7 +24,10 @@ int main(int,char**)
   ctx.uc_stack.ss_size = 16384;
   ::getcontext( &ctx );
   mf.run( &ctx );
+}
 
-  cout << "main thread done. Fiber state: " << ( mf.get_state() == fiber::FINISHED ? "FINISHED" : "Not changed" ) << endl;
-  return 0;
+int main( int argc, char* argv[] )
+{
+  ::testing::InitGoogleTest( &argc, argv );
+  return RUN_ALL_TESTS();
 }

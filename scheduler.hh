@@ -35,6 +35,8 @@ namespace schedulers
 
       bool has_fiber( fibers::fiber::ptr f );
 
+      virtual ~scheduler() {}
+
     private:
       scheduler();
 
@@ -42,7 +44,7 @@ namespace schedulers
 
       std::list< fibers::fiber::ptr > runners;
       std::tr1::shared_ptr< ::ucontext_t > own_context;
-      std::tr1::shared_ptr< vector< char > > own_stack;
+      std::tr1::shared_ptr< std::vector< char > > own_stack;
       std::tr1::shared_ptr< workers::worker > owner;
   };
 }

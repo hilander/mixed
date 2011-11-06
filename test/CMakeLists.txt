@@ -14,11 +14,33 @@ target_link_libraries ( private_list
 )
 add_test( private_list ${CMAKE_BINARY_DIR}/bin/private_list )
 
+add_executable ( fiber_yield yield.cc )
+target_link_libraries ( fiber_yield 
+  libmixed 
+  gtest
+)
+add_test( fiber_yield ${CMAKE_BINARY_DIR}/bin/fiber_yield )
+
+add_executable ( scheduler scheduler.cc )
+target_link_libraries ( scheduler 
+  libmixed 
+  gtest
+)
+add_test( scheduler ${CMAKE_BINARY_DIR}/bin/scheduler )
+
 add_executable ( fiber fiber.cc )
-target_link_libraries ( fiber libmixed )
+target_link_libraries ( fiber 
+  libmixed 
+  gtest
+)
+add_test( fiber ${CMAKE_BINARY_DIR}/bin/fiber )
 
 add_executable ( message_queue message_queue.cc )
-target_link_libraries ( message_queue libmixed )
+target_link_libraries ( message_queue 
+  libmixed 
+  gtest
+)
+add_test( message_queue ${CMAKE_BINARY_DIR}/bin/message_queue )
 
 add_executable ( mt-pipe mt-pipe.cc )
 target_link_libraries ( mt-pipe pthread )
@@ -38,10 +60,6 @@ target_link_libraries ( pthread-epoller-server pthread )
 add_executable ( pthread-epoller-client pthread-epoller-client.cc )
 target_link_libraries ( pthread-epoller-client libmixed )
 target_link_libraries ( pthread-epoller-client pthread )
-
-add_executable ( scheduler scheduler.cc )
-target_link_libraries ( scheduler libmixed )
-#target_link_libraries ( scheduler pthread )
 
 add_executable ( fiber-messaging fiber-messaging.cc )
 target_link_libraries ( fiber-messaging libmixed )

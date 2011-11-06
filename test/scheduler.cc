@@ -10,18 +10,20 @@ using namespace fibers;
 #include <scheduler.hh>
 using namespace schedulers;
 
+#include <gtest/gtest.h>
+
 class f : public fiber
 {
   public:
     virtual void go()
     {
-      cout << "f::go(): 1." << endl;
+ //     cout << "f::go(): 1." << endl;
       yield();
-      cout << "f::go(): 2." << endl;
+  //    cout << "f::go(): 2." << endl;
     }
 };
 
-int main(int,char**)
+TEST( Scheduler, Run )
 {
   scheduler::ptr s = scheduler::create();
   fiber::ptr my_f( new f );
@@ -32,7 +34,10 @@ int main(int,char**)
   s->insert( my_f );
   s->run();
   s->run();
-  cout << "main: ok" << endl;
+}
 
-  return 0;
+int main( int argc, char* argv[] )
+{
+  ::testing::InitGoogleTest( &argc, argv );
+  return RUN_ALL_TESTS();
 }

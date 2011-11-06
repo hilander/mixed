@@ -7,6 +7,10 @@ using namespace fibers;
 #include "master.hh"
 using namespace masters;
 
+#include <gtest/gtest.h>
+
+#include <iostream>
+
 class yielder : public fiber
 {
   public:
@@ -34,12 +38,17 @@ class starter : public fiber
     {}
 };
 
-int main(int,char**)
+TEST(Fiber, Yield)
 {
   master::ptr mp( master::create() );
   fiber::ptr sp( new starter() );
   sp->init();
   mp->spawn( sp );
   mp->run();
-  return 0;
+}
+
+int main( int argc, char* argv[] )
+{
+  ::testing::InitGoogleTest( &argc, argv );
+  return RUN_ALL_TESTS();
 }

@@ -21,6 +21,8 @@ namespace masters
 
       void spawn( fibers::fiber::ptr& f );
 
+      virtual ~master() {}
+
     private:
       master();
 
@@ -33,7 +35,8 @@ namespace masters
 
       std::tr1::shared_ptr< workers::worker > own_slave;
 
-      vector< std::tr1::shared_ptr< workers::worker > > slaves;
+      std::vector< std::tr1::shared_ptr< workers::worker > > slaves;
+      std::vector< ::pthread_t* > slave_threads;
 
       int workload;
   };

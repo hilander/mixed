@@ -8,7 +8,9 @@ using namespace std::tr1;
 #include <message_queue.hh>
 using namespace message_queues;
 
-int main(int,char**)
+#include <gtest/gtest.h>
+
+TEST( MessageQueue, SendReceive )
 {
   const int msize = 10;
 
@@ -24,24 +26,19 @@ int main(int,char**)
   mq.write_to_master( messages[0] );
   
   shared_ptr< message >  m;
-  if ( mq.read_for_master( m ) )
-  {
-    cout << "push+top. Got: " << m->m_type << endl;
-  }
-  if ( mq.read_for_master( m ) )
-  {
-    cout << "push+top. error" << endl;
-  }
-  else
-  {
-    cout << "push+top+top. ok" << endl;
-  }
+  ASSERT_TRUE( mq.read_for_master( m ) );
+  ASSERT_EQ( m->m_type, 1 );
+  ASSERT_FALSE( mq.read_for_master( m ) );
+
   mq.write_to_master( messages[0] );
   mq.read_for_master( m );
   mq.write_to_master( messages[1] );
-  if ( mq.read_for_master( m ) )
-  {
-    cout << "push+top. Got: " << m->m_type << endl;
-  }
-  return 0;
+  ASSERT_TRUE( mq.read_for_master( m ) );
+  ASSERT_EQ( m->m_type, 2 );
+}
+
+int main( int argc, char* argv[] )
+{
+  ::testing::InitGoogleTest( &argc, argv );
+  return RUN_ALL_TESTS();
 }

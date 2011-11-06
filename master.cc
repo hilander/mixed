@@ -1,3 +1,6 @@
+#include <algorithm>
+using namespace std;
+
 #include <pthread.h>
 
 #include <tr1/memory>
@@ -47,18 +50,26 @@ bool master::its_time_to_end()
     {
       worker::ptr tp = *vi;
       total_workload += tp->workload();
-      //cout << "#"; cout.flush();
     }
   }
 
-  /*
+  //send FINISH_WORK to all workers
   if ( total_workload == 0 )
   {
-    cout << "total_workload = 0" << endl;
+    vector< ::pthread_t* >::iterator wit;
+    for ( wit = slave_threads.begin(); wit != slave_threads.end(); wit++ )
+    {
+      ::pthread_cancel( *(*wit) );
+    }
+    std::cout << "its_time_to_end(): finishing work of child threads\n";
   }
-  */
 
   return total_workload == 0;
+}
+
+void internal_join( ::pthread_t* pt )
+{
+  ::pthread_join( *pt, 0 );
 }
 
 void master::run()
@@ -68,6 +79,7 @@ void master::run()
     read_message_queues();
     own_slave->iteration();
   }
+  for_each( slave_threads.begin(), slave_threads.end(), &internal_join );
   //cout << "own_slave: workload = " << own_slave->workload() << endl;
   //cout << "Master: workload = " << workload << endl;
   //cout << "Master: Exit." << endl;
@@ -86,11 +98,12 @@ void master::init()
       worker::ptr w( worker::create() );
       w->set_master( this );
       slaves.push_back( w );
-      ::pthread_t pt;
-      ::pthread_create( &pt
+      ::pthread_t* pt = new ::pthread_t;
+      ::pthread_create( pt
           , 0
           , reinterpret_cast< void*(*)(void*) >( &worker_pthread_starter )
           , reinterpret_cast< void* >( w.get() ) );
+      slave_threads.push_back( pt );
     }
   }
 }

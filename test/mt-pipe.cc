@@ -7,9 +7,9 @@ using namespace std::tr1;
 void* sender_fun( void* p )
 {
   int fd = *((int*)p);
-  for (int i = 0; i < 100; i++ )
+  for (int i = 0; i < 1000; i++ )
   {
-    char buf[8];
+    char buf[8] = ".......";
     ::write( fd, buf, 8 );
   }
   return 0;
@@ -18,7 +18,7 @@ void* sender_fun( void* p )
 void* receiver_fun( void* p )
 {
   int fd = *((int*)p);
-  for (int i = 0; i < 100; i++ )
+  for (int i = 0; i < 1000; i++ )
   {
     char buf[8];
     ::read( fd, buf, 8 );

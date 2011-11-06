@@ -302,7 +302,7 @@ void worker::spawn( fiber::ptr& f )
   service_message::ptr m;
   m.reset( new service_message( service_message::SPAWN ) );
   m->fiber_to_spawn = f;
-  message::ptr sm = dynamic_pointer_cast< message >( m );
+  message::ptr sm = static_pointer_cast< message >( m );
   pipe->write_to_master( sm );
 }
 
