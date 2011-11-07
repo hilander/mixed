@@ -9,6 +9,8 @@ using namespace std::tr1;
 #include <message_queue.hh>
 using namespace message_queues;
 
+#include <gtest/gtest.h>
+
 typedef void* thread_t;
 
 struct starter_pack
@@ -48,17 +50,11 @@ thread_t message_writer( void* d )
       cout << "Reader: bad value read. in " << i+1 << " attempt" << endl;
       break;
     }
-    /*
-    else
-    {
-      cout << "Reader: ok" << endl;
-    }
-    */
   }
   return 0;
 }
 
-int main(int,char**)
+TEST( MessageQueue, MultiThreaded )
 {
   const int msize = 10;
   shared_ptr< message_queue > mq( new message_queue() );
@@ -72,5 +68,10 @@ int main(int,char**)
   pthread_create( &reader_thread, 0, &message_reader, &sp );
   pthread_join( writer_thread, 0 );
   pthread_join( reader_thread, 0 );
-  return 0;
+}
+
+int main( int argc, char* argv[] )
+{
+  ::testing::InitGoogleTest( &argc, argv );
+  return RUN_ALL_TESTS();
 }

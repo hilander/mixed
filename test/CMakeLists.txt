@@ -43,11 +43,18 @@ target_link_libraries ( message_queue
 add_test( message_queue ${CMAKE_BINARY_DIR}/bin/message_queue )
 
 add_executable ( mt-pipe mt-pipe.cc )
-target_link_libraries ( mt-pipe pthread )
+target_link_libraries ( mt-pipe 
+  libmixed 
+  gtest
+)
+add_test( mt-pipe ${CMAKE_BINARY_DIR}/bin/mt-pipe )
 
 add_executable ( mt-message_queue mt-message_queue.cc )
-target_link_libraries ( mt-message_queue libmixed )
-target_link_libraries ( mt-message_queue pthread )
+target_link_libraries ( mt-message_queue 
+  libmixed 
+  gtest
+)
+add_test( mt-message_queue ${CMAKE_BINARY_DIR}/bin/mt-message_queue )
 
 add_executable ( pthread-message_queue pthread-message_queue.cc )
 target_link_libraries ( pthread-message_queue libmixed )
