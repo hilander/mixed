@@ -90,9 +90,7 @@ class receiver : public fiber
 //int main(int,char**)
 TEST( libmixed, fiber_messaging )
 {
-//  ::timeval start_stamp, end_stamp;
-//  ::gettimeofday( &start_stamp, 0 );
-  stopwatch sw;
+  stopwatch sw( stopwatch::USEC );
   sw.reset();
   receiver::ptr rp( new receiver() );
   rp->init();
@@ -101,11 +99,8 @@ TEST( libmixed, fiber_messaging )
   fiber::ptr rpf = dynamic_pointer_cast< fiber >( rp );
   m->spawn( rpf );
   m->run();
-  cout << "resolution: " << sw.str< stopwatch::MSEC >() << endl;
-//  ::gettimeofday( &end_stamp, 0 );
-//  cout << "main: ok. run in " << ( ( end_stamp.tv_sec*1000000+end_stamp.tv_usec - start_stamp.tv_sec*1000000 - start_stamp.tv_usec ) / 1000000. ) << "misecs." << endl;
-//  cout << "end_stamp: " << end_stamp.tv_usec << endl;
-//  cout << "end_stamp: " << start_stamp.tv_usec << endl;
+  sw.stop();
+  cout << "main: ok. run in " << sw.get_time() << " " << sw.str() << endl;
 }
 
 static void action_int( int action )
