@@ -57,11 +57,16 @@ bool master::its_time_to_end()
   if ( total_workload == 0 )
   {
     vector< ::pthread_t* >::iterator wit;
-    for ( wit = slave_threads.begin(); wit != slave_threads.end(); wit++ )
+    //for ( wit = slave_threads.begin(); wit != slave_threads.end(); wit++ )
+    for ( vi = slaves.begin(); vi != slaves.end(); vi++ )
     {
-      ::pthread_cancel( *(*wit) );
+      message::ptr m( new service_message( service_message::FINISH_WORK ) );
+      (*vi)->write_to_slave( m );
+      //::pthread_cancel( *(*wit) );
     }
-    std::cout << "its_time_to_end(): finishing work of child threads\n";
+    message::ptr m( new service_message( service_message::FINISH_WORK ) );
+    own_slave->write_to_slave( m );
+    //std::cout << "its_time_to_end(): finishing work of child threads\n";
   }
 
   return total_workload == 0;
@@ -79,9 +84,17 @@ void master::run()
     read_message_queues();
     own_slave->iteration();
   }
+  own_slave->run();
+  //cout << "Master: waiting for slave threads." << its_time_to_end() << endl;
+  if ( its_time_to_end() > 0 )
+  {
+    goto once_again;
+  }
   for_each( slave_threads.begin(), slave_threads.end(), &internal_join );
   //cout << "own_slave: workload = " << own_slave->workload() << endl;
   //cout << "Master: workload = " << workload << endl;
+once_again:
+  ;
   //cout << "Master: Exit." << endl;
 }
 

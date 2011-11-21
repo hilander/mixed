@@ -61,7 +61,7 @@ void worker::run()
 
 bool worker::finished()
 {
-  return master_allowed && ( workload() == 0 );
+  return master_allowed && ( workload() <= 0 );
 }
 
 void worker::iteration()
@@ -299,9 +299,11 @@ void worker::send_message( fiber_message::ptr m )
 
 void worker::spawn( fiber::ptr& f )
 {
+  fiber::ptr nf;
+  nf.swap( f );
   service_message::ptr m;
   m.reset( new service_message( service_message::SPAWN ) );
-  m->fiber_to_spawn = f;
+  m->fiber_to_spawn = nf;
   message::ptr sm = static_pointer_cast< message >( m );
   pipe->write_to_master( sm );
 }
