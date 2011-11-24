@@ -20,29 +20,22 @@ using namespace masters;
 
 #include "stopwatch-tool.hh"
 
-struct my_message : public fiber_message
-{
-    typedef shared_ptr< my_message > ptr;
-    int my_int;
-};
-
 class producer : public fiber
 {
   public:
     typedef shared_ptr< producer > ptr;
-    producer()
+    producer( int p )
+    : port( p )
     {
     }
-        virtual ~producer()
-        {
-        }
+
+    virtual ~producer()
+    {
+    }
 
     virtual void go()
     {
     }
-
-  private:
-    fiber::ptr rec;
 };
 
 class consumer : public fiber
@@ -52,39 +45,31 @@ class consumer : public fiber
     consumer()
     {
     }
-        virtual ~consumer()
-        {
-        }
+
+    virtual ~consumer()
+    {
+    }
 
     virtual void go()
     {
     }
-
-  private:
-    fiber::ptr rec;
 };
 
-class receiver : public fiber
+class starter : public fiber
 {
   public:
-    typedef shared_ptr< receiver > ptr;
-    receiver()
+    typedef shared_ptr< starter > ptr;
+    starter()
     {
     }
-        virtual ~receiver()
-        {
-        }
 
-    void set_receiver( fiber::ptr r )
+    virtual ~starter()
     {
-      rec = r;
     }
+
     virtual void go()
     {
     }
-
-  private:
-    fiber::ptr rec;
 };
 
 //int main(int,char**)
@@ -92,7 +77,7 @@ TEST( libmixed, fiber_messaging )
 {
   stopwatch sw( stopwatch::USEC );
   sw.reset();
-  receiver::ptr rp( new receiver() );
+  receiver::ptr rp( new starter() );
   rp->init();
 
   master* m = master::create();
