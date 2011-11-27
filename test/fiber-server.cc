@@ -44,7 +44,7 @@ class f_listener : public fibers::fiber
     {
       const int init_message_size = 12;
 
-      rw_buffer->resize( init_message_size );
+      rw_buffer.resize( init_message_size );
 
       ssize_t read_bytes =  init_message_size ;
 
@@ -62,35 +62,37 @@ class f_listener : public fibers::fiber
       else
       {
       }
-      string s = string( rw_buffer->begin(), rw_buffer->end() ).substr( 6, init_message_size );
+      string s = string( rw_buffer.begin(), rw_buffer.end() ).substr( 6, init_message_size );
       std::stringstream sstr;
-      sstr << string( rw_buffer->begin(), rw_buffer->end() ).substr( 6, init_message_size );
+      sstr << string( rw_buffer.begin(), rw_buffer.end() ).substr( 6, init_message_size );
       int bytes = 0;
       sstr >> bytes;
 
-      char sndbuf[1];
-      char recbuf[1];
-      rw_buffer->at( 0 ) = 42;
+      //char sndbuf[1];
+      //char recbuf[1];
+      rw_buffer.at( 0 ) = 42;
 
       for ( int i = 0; i < bytes; i++ )
       {
         int tmpcnt = 0;
         do { tmpcnt = do_read( fd, 1 ); if ( tmpcnt == 0 ) break; } while ( tmpcnt != 1 ) ;
         if ( tmpcnt == 0 ) { cout << "server: wtf(read)\n" ; break; }
-        sndbuf[0] = rw_buffer->at( 0 );
+        //sndbuf[0] = rw_buffer.at( 0 );
 
         tmpcnt = 0;
         do { tmpcnt = do_write( fd, 1 ); if ( tmpcnt == 0 ) break; } while ( tmpcnt != 1 ) ;
         if ( tmpcnt == 0 ) { cout << "server: wtf(write)\n" ; break; }
-        recbuf[0] = rw_buffer->at( 0 );
+        //recbuf[0] = rw_buffer.at( 0 );
 
+        /*
         if ( sndbuf[0] != recbuf[0] )
         {
           std::cout << "Server listener: Client response incorrect." << std::endl;
           break;
         }
+        */
       }
-      //cout << "Server listener: end." << endl;
+      cout << "Server listener: end." << endl;
       do_close( fd );
     }
 
@@ -109,7 +111,7 @@ class f_client : public fiber
     virtual void go()
     {
 
-      int max_opened = 1000;
+      int max_opened = 10;
       int sa = init_socket();
       if ( sa < 0 )
       {

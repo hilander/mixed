@@ -18,14 +18,22 @@ using namespace masters;
 
 #include <gtest/gtest.h>
 
+#include "s_err.hh"
 #include "stopwatch-tool.hh"
+
+struct my_message : public fiber_message
+{
+    typedef shared_ptr< my_message > ptr;
+    int my_int;
+};
 
 class producer : public fiber
 {
   public:
+
     typedef shared_ptr< producer > ptr;
-    producer( int p )
-    : port( p )
+
+    producer()
     {
     }
 
@@ -35,13 +43,25 @@ class producer : public fiber
 
     virtual void go()
     {
+      /*
+      initialize_socket();
+      for ( int connection = 0; connection < all_connections; connection++ )
+      {
+        accept_connection();
+      }
+      */
+    }
+    
+    void initialize_socket()
+    {
     }
 };
 
-class consumer : public fiber
-{
+class consumer : public fiber {
   public:
+
     typedef shared_ptr< consumer > ptr;
+
     consumer()
     {
     }
@@ -58,7 +78,9 @@ class consumer : public fiber
 class starter : public fiber
 {
   public:
+
     typedef shared_ptr< starter > ptr;
+
     starter()
     {
     }
@@ -69,20 +91,32 @@ class starter : public fiber
 
     virtual void go()
     {
+      string msg( "producer: ok\n" );
+      rw_buffer.resize( msg.size() );
+      copy( &msg.c_str()[0], &msg.c_str()[msg.size()], rw_buffer.begin() );
+      int s=0;
+      do
+      {
+        s += do_write( STDOUT_FILENO, rw_buffer.size() );
+      }
+      while ( s < msg.size() ) ;
+
+      fiber::ptr p( new producer );
+      p->init();
+      spawn( p );
     }
 };
 
-//int main(int,char**)
 TEST( libmixed, fiber_messaging )
 {
   stopwatch sw( stopwatch::USEC );
   sw.reset();
-  receiver::ptr rp( new starter() );
-  rp->init();
+  starter::ptr s( new starter() );
+  s->init();
 
   master* m = master::create();
-  fiber::ptr rpf = dynamic_pointer_cast< fiber >( rp );
-  m->spawn( rpf );
+  fiber::ptr sf = dynamic_pointer_cast< fiber >( s );
+  m->spawn( sf );
   m->run();
   sw.stop();
   cout << "main: ok. run in " << sw.get_time() << " " << sw.str() << endl;

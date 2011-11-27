@@ -86,11 +86,16 @@ namespace fibers
 
       void put_into_rw_buffer( char* b, ssize_t s );
 
+      template < typename dest_iterator > void get_from_rw_buffer( dest_iterator destination )
+      {
+        copy( rw_buffer.begin(), rw_buffer.end(), destination ); 
+      }
+
     protected:
 
       std::list< std::tr1::shared_ptr< message_queues::fiber_message > > message_buffer;
 
-      std::tr1::shared_ptr< std::vector< char > > rw_buffer;
+      std::vector< char > rw_buffer;
 
       int connect_status;
 

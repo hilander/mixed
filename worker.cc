@@ -124,12 +124,9 @@ void worker::do_epolls()
           {
             ssize_t ss = fib->second->get_rw_size();
             char* buf = new char[ ss ];
+            f->get_from_rw_buffer( buf );
             ssize_t write_res = ::write( fib->first, buf, ss );
             f->set_last_write( write_res );
-            if ( write_res > 0 )
-            {
-              f->put_into_rw_buffer( buf, write_res );
-            }
             f->set_state( fiber::READY );
             blocked_fds.erase( fib );
             io_facility->del( wev.data.fd );

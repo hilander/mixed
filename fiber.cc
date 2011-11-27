@@ -18,7 +18,6 @@ using namespace workers;
 fiber::fiber()
 : state( READY )
 {
-  rw_buffer.reset( new vector< char >() );
 }
 
 fiber::~fiber()
@@ -156,5 +155,5 @@ void fiber::put_into_message_buffer( shared_ptr< fiber_message > m )
 
 void fiber::put_into_rw_buffer( char* b, ssize_t s )
 {
-  copy( &b[0], &b[s], rw_buffer->begin() ); 
+  copy( &b[0], &b[s], rw_buffer.begin() ); 
 }

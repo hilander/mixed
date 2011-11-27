@@ -12,7 +12,6 @@ using namespace std::tr1;
 #include <arpa/inet.h>
 #include <sys/epoll.h>
 #include <errno.h>
-#include <errno.h>
 #include <pthread.h>
 #include <memory>
 #include <vector>
@@ -56,12 +55,12 @@ class f_client : public fiber
         }
       }
       
-      int n = 10;
+      int n = 1;
       char num[6];
       sprintf( num, "%6d", n );
       string buf( string( "HELLO:" ) + string( num ) );
-      rw_buffer->resize( buf.size() );
-      copy( buf.begin(), buf.end(), rw_buffer->begin() );
+      rw_buffer.resize( buf.size() );
+      copy( buf.begin(), buf.end(), rw_buffer.begin() );
       do_write( sa, buf.size() );
 
       //cout << "client: send/receive" << endl;
@@ -204,7 +203,7 @@ int main(int argc ,char* argv[])
   int port;
   sstr >> port;
 
-  int fiber_count = 1000;
+  int fiber_count = 10;
   fiber::ptr fcl[fiber_count];
   for (int i = 0; i < fiber_count; i++ )
   {
@@ -213,7 +212,7 @@ int main(int argc ,char* argv[])
     mp->spawn( fcl[i] );
   }
   mp->run();
-  //cout << "Main process: exiting." << endl;
+  cout << "Main process: exiting." << endl;
 
   return 0;
 }
