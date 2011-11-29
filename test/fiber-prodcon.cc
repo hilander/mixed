@@ -15,65 +15,11 @@ using namespace masters;
 
 #include <cstdlib>
 #include <sys/time.h>
+#include <fcntl.h>
 
 #include <gtest/gtest.h>
 
-#include "s_err.hh"
 #include "stopwatch-tool.hh"
-
-struct my_message : public fiber_message
-{
-    typedef shared_ptr< my_message > ptr;
-    int my_int;
-};
-
-class producer : public fiber
-{
-  public:
-
-    typedef shared_ptr< producer > ptr;
-
-    producer()
-    {
-    }
-
-    virtual ~producer()
-    {
-    }
-
-    virtual void go()
-    {
-      /*
-      initialize_socket();
-      for ( int connection = 0; connection < all_connections; connection++ )
-      {
-        accept_connection();
-      }
-      */
-    }
-    
-    void initialize_socket()
-    {
-    }
-};
-
-class consumer : public fiber {
-  public:
-
-    typedef shared_ptr< consumer > ptr;
-
-    consumer()
-    {
-    }
-
-    virtual ~consumer()
-    {
-    }
-
-    virtual void go()
-    {
-    }
-};
 
 class starter : public fiber
 {
@@ -92,18 +38,12 @@ class starter : public fiber
     virtual void go()
     {
       string msg( "producer: ok\n" );
-      rw_buffer.resize( msg.size() );
-      copy( &msg.c_str()[0], &msg.c_str()[msg.size()], rw_buffer.begin() );
-      int s=0;
-      do
+      rw_buffer.assign( msg.begin(), msg.end() );
+      for ( int i = 0; i < 1000; i++ )
       {
-        s += do_write( STDOUT_FILENO, rw_buffer.size() );
+        ::write( STDOUT_FILENO, (void*)&rw_buffer[0], rw_buffer.size() );
+        //do_write( STDOUT_FILENO, rw_buffer.size() );
       }
-      while ( s < msg.size() ) ;
-
-      fiber::ptr p( new producer );
-      p->init();
-      spawn( p );
     }
 };
 

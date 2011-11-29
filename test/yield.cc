@@ -13,6 +13,7 @@ using namespace masters;
 #include <gtest/gtest.h>
 
 #include <iostream>
+#include "stopwatch-tool.hh"
 
 class yielder : public fiber
 {
@@ -21,7 +22,10 @@ class yielder : public fiber
     yielder() {}
     virtual void go()
     {
-      //yield();
+      for ( int i = 0; i < 1000; i++ )
+      {
+        yield();
+      }
     }
     virtual ~yielder()
     {}
@@ -41,7 +45,6 @@ class starter : public fiber
         fiber::ptr fp = dynamic_pointer_cast< fiber >( yp );
         spawn( fp );
       }
-    cout << "main: ok." << endl;
     }
     virtual ~starter()
     {}
@@ -50,13 +53,16 @@ class starter : public fiber
 TEST(Fiber, Yield)
 {
   //master::ptr mp( master::create() );
+  stopwatch sw;
+  sw.reset();
   master* mp = master::create();
   starter::ptr sp( new starter() );
   sp->init();
   fiber::ptr fp = dynamic_pointer_cast< fiber >( sp );
   mp->spawn( fp );
   mp->run();
-  cout << "main: ok." << endl;
+  sw.stop();
+  cout << "time: " << sw.get_time() << " " << sw.str() << endl;
 }
 
 int main( int argc, char* argv[] )
