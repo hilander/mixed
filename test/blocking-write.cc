@@ -15,20 +15,24 @@ int main( int argc, char* argv[] )
 {
   getopts g;
   g.set( 'a' );
-  g.set( 'B' );
+  g.set( 'b' );
   g.parse( argc, argv );
-  cout << "For 'a' we have: " << g.get< int >( 'a' ) << endl;
-  cout << "For 'B' we have: " << g.get< string >( 'B' ) << endl;
+  int how_many = g.get< int >( 'a' );
+  int how_long = g.get< int >( 'b' );
   stopwatch sw( stopwatch::USEC );
   stringstream buffer;
-  /*
-  for ( int i = 0; i < 1000; i++ )
+
+  for ( int j = 0; j < how_long; j++ )
   {
-    buffer << "." << endl;
+      buffer << "." ;
   }
-  */
+  buffer << endl;
+
   sw.reset();
-  ::write( STDOUT_FILENO, (void*)buffer.str().c_str(), buffer.str().size() );
+  for ( int i = 0; i < how_many; i++ )
+  {
+      ::write( STDERR_FILENO, (void*)buffer.str().c_str(), buffer.str().size() );
+  }
   sw.stop();
   cout << sw.get_time() << endl;
   return EXIT_SUCCESS;

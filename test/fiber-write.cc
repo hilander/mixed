@@ -17,11 +17,11 @@ using namespace masters;
 #include <sys/time.h>
 #include <fcntl.h>
 
-#include <gtest/gtest.h>
-
 #include "stopwatch-tool.hh"
 
 #include "getopt.hh"
+
+int how_many, how_long;
 
 class starter : public fiber
 {
@@ -39,41 +39,46 @@ class starter : public fiber
 
     virtual void go()
     {
-      string msg( "producer: ok\n" );
-      rw_buffer.assign( msg.begin(), msg.end() );
-      for ( int i = 0; i < 1000; i++ )
+      stringstream msg;
+
+      for ( int j = 1; j < how_long; j++ )
       {
-        //::write( STDOUT_FILENO, (void*)&rw_buffer[0], rw_buffer.size() );
-        do_write( STDOUT_FILENO, rw_buffer.size() );
+          msg << "." ;
       }
+      msg << endl;
+
+      rw_buffer.resize( msg.str().size()*2 );
+      int i = 0;
+      for ( string::iterator si = msg.str().begin(); si != msg.str().end(); si++ )
+      {
+          rw_buffer.at( i++ ) = *si;
+      }
+      cout << "rw_buffer size = " << rw_buffer.size() << ", msg.str size = " << msg.str().size() << endl;
+      stopwatch sw( stopwatch::USEC );
+      sw.reset();
+      for ( int i = 0; i < how_many; i++ )
+      {
+        do_write( STDERR_FILENO, rw_buffer.size() );
+      }
+      sw.stop();
+      cout << sw.get_time() << endl;
     }
 };
 
-TEST( libmixed, fiber_messaging )
-{
-  stopwatch sw( stopwatch::USEC );
-  sw.reset();
-  starter::ptr s( new starter() );
-  s->init();
-
-  master* m = master::create();
-  fiber::ptr sf = dynamic_pointer_cast< fiber >( s );
-  m->spawn( sf );
-  m->run();
-  sw.stop();
-  cout << "main: ok. run in " << sw.get_time() << " " << sw.str() << endl;
-}
-
-static void action_int( int action )
-{
-  cout << ::getpid() << "got " << action << endl;
-  ::exit( EXIT_FAILURE );
-}
-
 int main( int argc, char* argv[] )
 {
-  signal( SIGPIPE, SIG_IGN );
-  signal( SIGINT, &action_int );
-  ::testing::InitGoogleTest( &argc, argv );
-  return RUN_ALL_TESTS();
+  getopts g;
+  g.set( 'a' );
+  g.set( 'b' );
+  g.parse( argc, argv );
+  how_many = g.get< int >( 'a' );
+  how_long = g.get< int >( 'b' );
+  starter::ptr s( new starter() );
+  s->init();
+  master* m = master::create();
+  fiber::ptr sf = dynamic_pointer_cast< fiber >( s );
+
+  m->spawn( sf );
+  m->run();
+  return EXIT_SUCCESS;
 }
