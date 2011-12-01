@@ -21,12 +21,17 @@ target_link_libraries ( fiber_yield
 )
 add_test( fiber_yield ${CMAKE_BINARY_DIR}/bin/fiber_yield )
 
-add_executable ( prodcon fiber-prodcon.cc )
-target_link_libraries ( prodcon 
+add_executable ( fiber_write fiber-write.cc )
+target_link_libraries ( fiber_write 
   libmixed 
   gtest
 )
-add_test( prodcon ${CMAKE_BINARY_DIR}/bin/prodcon )
+
+add_executable ( blocking_write blocking-write.cc )
+target_link_libraries ( blocking_write 
+  libmixed 
+  gtest
+)
 
 add_executable ( scheduler scheduler.cc )
 target_link_libraries ( scheduler 

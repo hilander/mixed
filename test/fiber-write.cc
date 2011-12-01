@@ -21,6 +21,8 @@ using namespace masters;
 
 #include "stopwatch-tool.hh"
 
+#include "getopt.hh"
+
 class starter : public fiber
 {
   public:
@@ -41,8 +43,8 @@ class starter : public fiber
       rw_buffer.assign( msg.begin(), msg.end() );
       for ( int i = 0; i < 1000; i++ )
       {
-        ::write( STDOUT_FILENO, (void*)&rw_buffer[0], rw_buffer.size() );
-        //do_write( STDOUT_FILENO, rw_buffer.size() );
+        //::write( STDOUT_FILENO, (void*)&rw_buffer[0], rw_buffer.size() );
+        do_write( STDOUT_FILENO, rw_buffer.size() );
       }
     }
 };
