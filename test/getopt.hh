@@ -56,13 +56,6 @@ namespace ___getopt_ns
         opt_substrings[ c ] = true;
       }
 
-      /*
-      string get( char c )
-      {
-        return option_vals[ c ];
-      }
-      */
-
       void parse( int argc, char* const argv[] )
       {
         for_each( opt_substrings.begin()

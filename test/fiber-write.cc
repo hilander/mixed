@@ -39,21 +39,8 @@ class starter : public fiber
 
     virtual void go()
     {
-      stringstream msg;
-
-      for ( int j = 1; j < how_long; j++ )
-      {
-          msg << "." ;
-      }
-      msg << endl;
-
-      rw_buffer.resize( msg.str().size()*2 );
-      int i = 0;
-      for ( string::iterator si = msg.str().begin(); si != msg.str().end(); si++ )
-      {
-          rw_buffer.at( i++ ) = *si;
-      }
-      cout << "rw_buffer size = " << rw_buffer.size() << ", msg.str size = " << msg.str().size() << endl;
+      rw_buffer.assign( how_long+1, '.' );
+      rw_buffer.at( how_long ) = '\n';
       stopwatch sw( stopwatch::USEC );
       sw.reset();
       for ( int i = 0; i < how_many; i++ )
