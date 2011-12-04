@@ -19,7 +19,12 @@ target_link_libraries ( fiber_yield
   libmixed 
   gtest
 )
-add_test( fiber_yield ${CMAKE_BINARY_DIR}/bin/fiber_yield )
+
+add_executable ( pthread_yield pthread_yield.cc )
+target_link_libraries ( pthread_yield 
+  libmixed 
+  gtest
+)
 
 add_executable ( fiber_write fiber-write.cc )
 target_link_libraries ( fiber_write 

@@ -13,11 +13,11 @@ namespace masters
     public:
       typedef std::tr1::shared_ptr< master > ptr;
 
-      static master* create();
+      static master* create( bool eio = true );
 
       void run();
 
-      void init();
+      void init( bool enable_io = true );
 
       void spawn( fibers::fiber::ptr& f );
 

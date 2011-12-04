@@ -21,7 +21,7 @@ namespace workers
     public:
       typedef std::tr1::shared_ptr< worker > ptr;
 
-      static worker* create();
+      static worker* create( bool eio = true );
 
       virtual ~worker();
 
@@ -54,7 +54,7 @@ namespace workers
       void set_master( masters::master* m );
 
     private:
-      worker();
+      worker( bool eio = true );
 
       void do_epolls();
 
@@ -73,6 +73,7 @@ namespace workers
 
       bool master_allowed;
       int unspawned_fibers;
+      bool enable_io;
   };
 }
 

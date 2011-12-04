@@ -29,10 +29,10 @@ void* worker_pthread_starter( worker* w )
   return 0;
 }
 
-master* master::create()
+master* master::create( bool eio )
 {
   master* p = new master();
-  p->init();
+  p->init( eio );
   return p;
 }
 
@@ -98,9 +98,9 @@ once_again:
   //cout << "Master: Exit." << endl;
 }
 
-void master::init()
+void master::init( bool enable_io )
 {
-  own_slave.reset( worker::create() );
+  own_slave.reset( worker::create( enable_io ) );
   own_slave->set_master( this );
 
   cpu_set_t cs;
@@ -108,7 +108,7 @@ void master::init()
   {
     for ( int free_cores = 0; free_cores < ( CPU_COUNT( &cs ) ) - 1; free_cores++ )
     {
-      worker::ptr w( worker::create() );
+      worker::ptr w( worker::create( enable_io ) );
       w->set_master( this );
       slaves.push_back( w );
       ::pthread_t* pt = new ::pthread_t;

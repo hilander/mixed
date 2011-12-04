@@ -28,9 +28,10 @@ using namespace epollers;
 #include "worker.hh"
 using namespace workers;
 
-  worker::worker()
+  worker::worker( bool eio )
 : master_allowed( false )
 , unspawned_fibers( 0 )
+, enable_io( eio )
 {
 }
 
@@ -38,16 +39,19 @@ worker::~worker()
 {
 }
 
-worker* worker::create()
+worker* worker::create( bool eio )
 {
-  worker* p = new worker();
+  worker* p = new worker( eio );
   p->init();
   return p;
 }
 void worker::init()
 {
   sched = scheduler::create( shared_ptr< worker >( this ) );
-  io_facility = epoller::create();
+  if ( enable_io )
+  {
+    io_facility = epoller::create();
+  }
   pipe.reset( new message_queue() );
 }
 
@@ -68,7 +72,10 @@ void worker::iteration()
 {
   process_incoming_message_queues();
   sched->run();
-  do_epolls();
+  if ( enable_io )
+  {
+    do_epolls();
+  }
 }
 
 int worker::workload()
