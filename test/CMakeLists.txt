@@ -20,6 +20,16 @@ target_link_libraries ( fiber_yield
   gtest
 )
 
+add_executable ( fiber_nullfork fiber_nullfork.cc )
+target_link_libraries ( fiber_nullfork 
+  libmixed 
+)
+
+add_executable ( pthread_nullfork pthread_nullfork.cc )
+target_link_libraries ( pthread_nullfork 
+  libmixed 
+)
+
 add_executable ( pthread_yield pthread_yield.cc )
 target_link_libraries ( pthread_yield 
   libmixed 
