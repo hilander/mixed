@@ -49,6 +49,8 @@ namespace workers
 
       void write_to_slave( std::tr1::shared_ptr< message_queues::message >& m );
 
+      void write_to_master( std::tr1::shared_ptr< message_queues::message >& m );
+
       int workload();
 
       void set_master( masters::master* m );
@@ -72,7 +74,6 @@ namespace workers
       masters::master* my_master;
 
       bool master_allowed;
-      int unspawned_fibers;
       bool enable_io;
   };
 }

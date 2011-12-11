@@ -30,7 +30,6 @@ using namespace workers;
 
   worker::worker( bool eio )
 : master_allowed( false )
-, unspawned_fibers( 0 )
 , enable_io( eio )
 {
 }
@@ -80,7 +79,7 @@ void worker::iteration()
 
 int worker::workload()
 {
-  return sched->workload() + unspawned_fibers;
+  return sched->workload();
 }
 
 void worker::set_master( masters::master* m )
@@ -320,6 +319,11 @@ bool worker::read_for_master( message::ptr& m )
 void worker::write_to_slave( message::ptr& m )
 {
   pipe->write_to_slave( m );
+}
+
+void worker::write_to_master( message::ptr& m )
+{
+  pipe->write_to_master( m );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

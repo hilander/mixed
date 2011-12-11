@@ -1,5 +1,7 @@
 #include <tr1/memory>
+#include <tr1/functional>
 using namespace std::tr1;
+using namespace std::tr1::placeholders;
 
 #include <algorithm>
 using namespace std;
@@ -9,26 +11,6 @@ using namespace schedulers;
 
 #include "fiber.hh"
 using namespace fibers;
-
-class fiber_runner
-{
-  public:
-    fiber_runner( shared_ptr< ::ucontext_t > c )
-      : worker_ctx( c )
-    {
-    }
-
-    void operator() ( fiber::ptr fp )
-    {
-      if ( fp->get_state() == fiber::READY )
-      {
-        fp->run( worker_ctx.get() );
-      }
-    }
-
-  private:
-    shared_ptr< ::ucontext_t > worker_ctx;
-};
 
 scheduler::scheduler()
 {
@@ -64,10 +46,18 @@ int scheduler::workload()
   return runners.size();
 }
 
+void scheduler::run_part( fibers::fiber::ptr& fp )
+{
+  if ( fp->get_state() == fiber::READY )
+  {
+    fp->run( own_context.get() );
+  }
+}
+
 void scheduler::run()
 {
-  fiber_runner run_part( own_context );
-  for_each( runners.begin(), runners.end(), run_part );
+  for_each( runners.begin(), runners.end()
+          , bind( &scheduler::run_part, shared_from_this(), _1 ) );
   remove_finished();
 }
 

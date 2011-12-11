@@ -14,7 +14,7 @@ namespace workers
 
 namespace schedulers
 {
-  class scheduler
+  class scheduler : public std::tr1::enable_shared_from_this< scheduler >
   {
     public:
       typedef std::tr1::shared_ptr< scheduler > ptr;
@@ -36,6 +36,8 @@ namespace schedulers
       bool has_fiber( fibers::fiber::ptr f );
 
       virtual ~scheduler() {}
+
+      void run_part( fibers::fiber::ptr& fp );
 
     private:
       scheduler();

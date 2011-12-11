@@ -21,6 +21,8 @@ using namespace workers;
 #include "master.hh"
 using namespace masters;
 
+#include <cassert>
+
 #include <iostream>
 using namespace std;
 void* worker_pthread_starter( worker* w )
@@ -69,6 +71,10 @@ bool master::its_time_to_end()
     //std::cout << "its_time_to_end(): finishing work of child threads\n";
   }
 
+  if ( total_workload <= 0 )
+  {
+    cout << "master: total_workload = " << total_workload << endl;
+  }
   return total_workload == 0;
 }
 
@@ -84,17 +90,17 @@ void master::run()
     read_message_queues();
     own_slave->iteration();
   }
-  own_slave->run();
-  //cout << "Master: waiting for slave threads." << its_time_to_end() << endl;
-  if ( its_time_to_end() > 0 )
-  {
-    goto once_again;
-  }
-  for_each( slave_threads.begin(), slave_threads.end(), &internal_join );
+  //own_slave->run();
+  cout << "Master: waiting for slave threads." << its_time_to_end() << endl;
+  //if ( its_time_to_end() > 0 )
+  //{
+   // goto once_again;
+  //}
+  //for_each( slave_threads.begin(), slave_threads.end(), &internal_join );
   //cout << "own_slave: workload = " << own_slave->workload() << endl;
   //cout << "Master: workload = " << workload << endl;
-once_again:
-  ;
+//once_again:
+  //;
   //cout << "Master: Exit." << endl;
 }
 
@@ -148,9 +154,8 @@ void master::spawn( fiber::ptr& f )
 {
   service_message::ptr p( new service_message( service_message::SPAWN ) );
   p->fiber_to_spawn = f;
-  worker::ptr s = get_worker_with_smallest_workload();
-  message::ptr m = dynamic_pointer_cast< message >( p );
-  s->write_to_slave( m );
+  message::ptr m = static_pointer_cast< message >( p );
+  own_slave->write_to_master( m );
   workload++;
 }
 
@@ -161,6 +166,9 @@ void master::read_from_slave( worker::ptr s )
   while ( s->read_for_master( m ) )
   {
     service_message::ptr sm = dynamic_pointer_cast< service_message >( m );
+
+    assert( sm.get() != 0 );
+
     switch ( sm->service )
     {
       case service_message::SPAWN:
@@ -169,11 +177,12 @@ void master::read_from_slave( worker::ptr s )
           worker::ptr s = get_worker_with_smallest_workload();
           s->write_to_slave( m );
           workload++;
-          //cout << "spawn\n";
+          cout << "SPAWN " << ( s.get() == own_slave.get() ? "to own_slave" : "to foreign slave" ) << endl;
           break;
         }
 
       case service_message::SPAWN_REPLY:
+          cout << "SPAWN_REPLY\n";
         workload--;
         break;
 
