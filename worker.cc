@@ -300,13 +300,17 @@ void worker::send_message( fiber_message::ptr m )
   }
 }
 
-void worker::spawn( fiber::ptr& f )
+void worker::spawn( fiber::ptr f )
 {
-  fiber::ptr nf;
-  nf.swap( f );
-  service_message::ptr m;
-  m.reset( new service_message( service_message::SPAWN ) );
-  m->fiber_to_spawn = nf;
+  //fiber::ptr nf;
+  //nf.swap( f );
+  //service_message::ptr m;
+  //m.reset( new service_message( service_message::SPAWN ) );
+  //m->fiber_to_spawn = nf;
+  //message::ptr sm = static_pointer_cast< message >( m );
+  //pipe->write_to_master( sm );
+  service_message::ptr m( new service_message( service_message::SPAWN ) );
+  m->fiber_to_spawn = f;
   message::ptr sm = static_pointer_cast< message >( m );
   pipe->write_to_master( sm );
 }

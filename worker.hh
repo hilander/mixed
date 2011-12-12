@@ -43,7 +43,7 @@ namespace workers
 
       void send_message( std::tr1::shared_ptr< message_queues::fiber_message > m );
 
-      void spawn( fibers::fiber::ptr& f );
+      void spawn( fibers::fiber::ptr f );
 
       bool read_for_master( std::tr1::shared_ptr< message_queues::message >& m );
 

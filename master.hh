@@ -5,10 +5,11 @@
 
 #include "fiber.hh"
 #include "worker.hh"
+#include "message.hh"
 
 namespace masters
 {
-  class master
+  class master : public std::tr1::enable_shared_from_this< master >
   {
     public:
       typedef std::tr1::shared_ptr< master > ptr;
@@ -30,6 +31,7 @@ namespace masters
 
       void read_from_slave( workers::worker::ptr s );
       void read_message_queues();
+      void process_spawn_reqs( message_queues::service_message::ptr r );
 
       std::tr1::shared_ptr< workers::worker > get_worker_with_smallest_workload();
 
@@ -37,6 +39,7 @@ namespace masters
 
       std::vector< std::tr1::shared_ptr< workers::worker > > slaves;
       std::vector< ::pthread_t* > slave_threads;
+      std::vector< message_queues::service_message::ptr > waiting_spawn_requests;
 
       int workload;
   };

@@ -4,7 +4,9 @@ using namespace std;
 #include <pthread.h>
 
 #include <tr1/memory>
+#include <tr1/functional>
 using namespace std::tr1;
+using namespace std::tr1::placeholders;
 
 #include <vector>
 using namespace std;
@@ -48,11 +50,11 @@ bool master::its_time_to_end()
       ; vi != slaves.end()
       ; vi++ )
   {
-    if ( vi->get() != 0 )
-    {
+    //if ( vi->get() != 0 )
+    //{
       worker::ptr tp = *vi;
       total_workload += tp->workload();
-    }
+    //}
   }
 
   //send FINISH_WORK to all workers
@@ -85,6 +87,8 @@ void internal_join( ::pthread_t* pt )
 
 void master::run()
 {
+  for_each( waiting_spawn_requests.begin(), waiting_spawn_requests.end()
+          , bind( &master::process_spawn_reqs, this, _1 ) );
   while ( ! its_time_to_end() )
   {
     read_message_queues();
@@ -154,9 +158,10 @@ void master::spawn( fiber::ptr& f )
 {
   service_message::ptr p( new service_message( service_message::SPAWN ) );
   p->fiber_to_spawn = f;
-  message::ptr m = static_pointer_cast< message >( p );
-  own_slave->write_to_master( m );
-  workload++;
+  //message::ptr m = static_pointer_cast< message >( p );
+  waiting_spawn_requests.push_back( p );
+  //own_slave->write_to_master( m );
+  //workload++;
 }
 
 void master::read_from_slave( worker::ptr s )
@@ -165,6 +170,7 @@ void master::read_from_slave( worker::ptr s )
 
   while ( s->read_for_master( m ) )
   {
+    cout << "."; cout.flush();
     service_message::ptr sm = dynamic_pointer_cast< service_message >( m );
 
     assert( sm.get() != 0 );
@@ -177,13 +183,13 @@ void master::read_from_slave( worker::ptr s )
           worker::ptr s = get_worker_with_smallest_workload();
           s->write_to_slave( m );
           workload++;
-          cout << "SPAWN " << ( s.get() == own_slave.get() ? "to own_slave" : "to foreign slave" ) << endl;
+          cout << "SPAWN " << ( s.get() == own_slave.get() ? "to own_slave" : "to foreign slave" ) << s.get() << ", wload=" << workload << endl;
           break;
         }
 
       case service_message::SPAWN_REPLY:
-          cout << "SPAWN_REPLY\n";
         workload--;
+          cout << "SPAWN_REPLY from " << s.get() << "; wload=" << workload << endl;
         break;
 
       case service_message::BROADCAST_MESSAGE:
@@ -225,7 +231,17 @@ void master::read_message_queues()
   read_from_slave( own_slave );
 }
 
-  master::master()
+void master::process_spawn_reqs( service_message::ptr r )
+{
+  fiber::ptr fp = r->fiber_to_spawn;
+  worker::ptr s = get_worker_with_smallest_workload();
+  message::ptr m = static_pointer_cast< message >( r );
+  s->write_to_slave( m );
+  workload++;
+  cout << "process_spawn_reqs(): " << ( s.get() == own_slave.get() ? "to own_slave" : "to foreign slave" ) << s.get() << ", wload=" << workload << endl;
+}
+
+master::master()
 : workload( 0 )
 {
 }
