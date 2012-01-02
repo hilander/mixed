@@ -97,6 +97,10 @@ target_link_libraries ( y1
 )
 add_test( y1 ${CMAKE_BINARY_DIR}/bin/y1 )
 
+add_executable ( coroutine_yield_stress coroutine_yield_stress.cc )
+target_link_libraries ( coroutine_yield_stress 
+  libmixed
+)
 add_executable ( pthread-message_queue pthread-message_queue.cc )
 target_link_libraries ( pthread-message_queue libmixed )
 target_link_libraries ( pthread-message_queue pthread )
