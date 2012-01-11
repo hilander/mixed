@@ -309,7 +309,8 @@ void worker::spawn( fiber::ptr& f )
   m.reset( new service_message( service_message::SPAWN ) );
   m->fiber_to_spawn = nf;
   message::ptr sm = static_pointer_cast< message >( m );
-  pipe->write_to_master( sm );
+  //pipe->write_to_master( sm );
+  pipe->write_to_slave( sm );
 }
 
 bool worker::read_for_master( message::ptr& m )

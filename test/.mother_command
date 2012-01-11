@@ -1,0 +1,1 @@
+echo > /home/qq/pthread_yield_1_n.pairs ; for (( YIELDS=1 ; YIELDS < 10000 ; YIELDS += 100 )) ; do TMP_W=0 ; for (( i=0 ; i < 10 ; i++ )) ;   do   TMP_B=`./bin/pthread_yield -s 1 -y $YIELDS` ;   TMP_W=`expr $TMP_B + $TMP_W` ; done ; echo $TMP_W ; W=`expr $TMP_W / 10 ` ; echo $YIELDS $W >> /home/qq/pthread_yield_1_n.pairs ; done

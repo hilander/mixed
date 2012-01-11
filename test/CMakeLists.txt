@@ -121,3 +121,9 @@ add_executable ( fiber-client fiber-client.cc )
 target_link_libraries ( fiber-client libmixed )
 target_link_libraries ( fiber-client pthread )
 
+add_executable ( pthread-write pthread-write.cc )
+target_link_libraries ( pthread-write 
+  pthread
+  gtest
+)
+

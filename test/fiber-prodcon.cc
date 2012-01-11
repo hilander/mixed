@@ -26,13 +26,8 @@ class producer : public fiber
   public:
 
     typedef shared_ptr< producer > ptr;
-<<<<<<< HEAD
-    producer( int p )
-    : port( p )
-=======
 
     producer()
->>>>>>> Don't take this commit seriously... on the way commit
     {
     }
 
@@ -42,8 +37,6 @@ class producer : public fiber
 
     virtual void go()
     {
-<<<<<<< HEAD
-=======
       /*
       initialize_socket();
       for ( int connection = 0; connection < all_connections; connection++ )
@@ -55,7 +48,6 @@ class producer : public fiber
     
     void initialize_socket()
     {
->>>>>>> Don't take this commit seriously... on the way commit
     }
 };
 
@@ -80,13 +72,9 @@ class consumer : public fiber {
 class starter : public fiber
 {
   public:
-<<<<<<< HEAD
-    typedef shared_ptr< starter > ptr;
-=======
 
     typedef shared_ptr< starter > ptr;
 
->>>>>>> Don't take this commit seriously... on the way commit
     starter()
     {
     }
@@ -117,13 +105,8 @@ TEST( libmixed, fiber_messaging )
 {
   stopwatch sw( stopwatch::USEC );
   sw.reset();
-<<<<<<< HEAD
-  receiver::ptr rp( new starter() );
-  rp->init();
-=======
   starter::ptr s( new starter() );
   s->init();
->>>>>>> Don't take this commit seriously... on the way commit
 
   master* m = master::create();
   fiber::ptr sf = dynamic_pointer_cast< fiber >( s );
