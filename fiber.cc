@@ -15,6 +15,8 @@ using namespace message_queues;
 #include "worker.hh"
 using namespace workers;
 
+#include <unistd.h>
+
 fiber::fiber()
 : state( READY )
 {
@@ -31,7 +33,7 @@ void fiber::start()
   yield();
 }
 
-ssize_t fiber::do_read( int f, ssize_t s )
+ssize_t fiber::do_read( int32_t f, ssize_t s )
 {
   last_read = -1;
   rw_size = s;
@@ -40,7 +42,7 @@ ssize_t fiber::do_read( int f, ssize_t s )
   return last_read;
 }
 
-ssize_t fiber::do_write( int f, ssize_t s )
+ssize_t fiber::do_write( int32_t f, ssize_t s )
 {
   rw_size = s;
   last_read = -1;
@@ -49,18 +51,18 @@ ssize_t fiber::do_write( int f, ssize_t s )
   return last_write;
 }
 
-int fiber::do_accept( int f )
+int32_t fiber::do_accept( int32_t f )
 {
   owner->block_on_io( f, shared_from_this(), BLOCKED_FOR_ACCEPT );
   yield();
   return last_accepted_fd;
 }
 
-void fiber::do_connect( int f, ::sockaddr_in& s )
+void fiber::do_connect( int32_t f, ::sockaddr_in& s )
 {
   owner->insert_fd( f );
 
-  int sw = ::connect( f, (const sockaddr*)&s, sizeof(s) );
+  int32_t sw = ::connect( f, (const sockaddr*)&s, sizeof(s) );
 
   if ( sw == 0 )
   {
@@ -76,7 +78,7 @@ void fiber::do_connect( int f, ::sockaddr_in& s )
   yield();
 }
 
-void fiber::do_close( int f )
+void fiber::do_close( int32_t f )
 {
   owner->remove_fd( f );
   ::close( f );
@@ -123,12 +125,12 @@ ssize_t fiber::get_rw_size()
   return rw_size;
 }
 
-void fiber::set_last_accepted_fd( int f )
+void fiber::set_last_accepted_fd( int32_t f )
 {
   last_accepted_fd = f;
 }
 
-void fiber::set_connect_status( int status )
+void fiber::set_connect_status( int32_t status )
 {
   connect_status = status;
 }

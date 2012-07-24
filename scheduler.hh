@@ -25,7 +25,7 @@ namespace schedulers
 
       void run();
 
-      int workload();
+      int32_t workload();
 
       void init();
 

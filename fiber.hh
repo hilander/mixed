@@ -46,15 +46,15 @@ namespace fibers
 
       virtual void start();
 
-      ssize_t do_read( int f, ssize_t s );
+      ssize_t do_read( int32_t f, ssize_t s );
 
-      ssize_t do_write( int f, ssize_t s );
+      ssize_t do_write( int32_t f, ssize_t s );
 
-      int do_accept( int f );
+      int32_t do_accept( int32_t f );
 
-      void do_connect( int f, ::sockaddr_in& s );
+      void do_connect( int32_t f, ::sockaddr_in& s );
 
-      void do_close( int f );
+      void do_close( int32_t f );
 
       void send_message( std::tr1::shared_ptr< message_queues::fiber_message >& m );
 
@@ -72,9 +72,9 @@ namespace fibers
 
       ssize_t get_rw_size();
 
-      void set_last_accepted_fd( int f );
+      void set_last_accepted_fd( int32_t f );
 
-      void set_connect_status( int status );
+      void set_connect_status( int32_t status );
 
       void set_last_read( ssize_t s );
 
@@ -97,14 +97,14 @@ namespace fibers
 
       std::vector< char > rw_buffer;
 
-      int connect_status;
+      int32_t connect_status;
 
     private:
       current_state state;
       ssize_t rw_size;
       ssize_t last_read;
       ssize_t last_write;
-      int last_accepted_fd;
+      int32_t last_accepted_fd;
       std::tr1::shared_ptr< workers::worker > owner;
   };
 }

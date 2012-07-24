@@ -17,19 +17,19 @@ int main( int argc, char* argv[] )
   g.set( 'a' );
   g.set( 'b' );
   g.parse( argc, argv );
-  int how_many = g.get< int >( 'a' );
-  int how_long = g.get< int >( 'b' );
+  int32_t how_many = g.get< int32_t >( 'a' );
+  int32_t how_long = g.get< int32_t >( 'b' );
   stopwatch sw( stopwatch::USEC );
   stringstream buffer;
 
-  for ( int j = 0; j < how_long; j++ )
+  for ( int32_t j = 0; j < how_long; j++ )
   {
       buffer << "." ;
   }
   buffer << endl;
 
   sw.reset();
-  for ( int i = 0; i < how_many; i++ )
+  for ( int32_t i = 0; i < how_many; i++ )
   {
       ::write( STDERR_FILENO, (void*)buffer.str().c_str(), buffer.str().size() );
   }

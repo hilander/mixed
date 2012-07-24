@@ -9,8 +9,8 @@ namespace message_queues
 {
   struct message_type
   {
-    static const int FiberMessage = 10;
-    static const int ServiceMessage = 20;
+    static const int32_t FiberMessage = 10;
+    static const int32_t ServiceMessage = 20;
   };
 
   struct message : std::tr1::enable_shared_from_this< message >
@@ -19,7 +19,7 @@ namespace message_queues
     message();
     virtual ~message();
 
-    int m_type;
+    int32_t m_type;
 
     bool used;
     ptr prev;

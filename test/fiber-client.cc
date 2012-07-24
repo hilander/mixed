@@ -24,23 +24,23 @@ using namespace fibers;
 #include <master.hh>
 using namespace masters;
 
-const int default_port = 8100;
+const int32_t default_port = 8100;
 
-string s_err( int num );
+string s_err( int32_t num );
 
 class f_client : public fiber
 {
   public:
-    f_client( char* address_c_str, int port )
+    f_client( char* address_c_str, int32_t port )
       : _addr( address_c_str )
       , _port( port )
     {}
 
     virtual void go()
     {
-      int sa;
+      int32_t sa;
 
-      for ( int tries = 0; tries < 10; tries++ )
+      for ( int32_t tries = 0; tries < 10; tries++ )
       {
         sa = init_socket();
 
@@ -55,7 +55,7 @@ class f_client : public fiber
         }
       }
       
-      int n = 1;
+      int32_t n = 1;
       char num[6];
       sprintf( num, "%6d", n );
       string buf( string( "HELLO:" ) + string( num ) );
@@ -64,7 +64,7 @@ class f_client : public fiber
       do_write( sa, buf.size() );
 
       //cout << "client: send/receive" << endl;
-      for ( int i = 0; i < n; i++ )
+      for ( int32_t i = 0; i < n; i++ )
       {
         do_read( sa, 1 );
         do_write( sa, 1 );
@@ -76,15 +76,15 @@ class f_client : public fiber
 
   private:
 
-    int init_socket()
+    int32_t init_socket()
     {
       sockaddr_in sar;
       sar.sin_family = AF_INET;
       inet_pton( AF_INET, _addr, &sar.sin_addr );
       sar.sin_port = htons( _port );
 
-      int sa = socket( AF_INET, SOCK_STREAM, 0 );
-      int orig_flags = fcntl( sa, F_GETFL );
+      int32_t sa = socket( AF_INET, SOCK_STREAM, 0 );
+      int32_t orig_flags = fcntl( sa, F_GETFL );
       fcntl( sa, F_SETFL, orig_flags | O_NONBLOCK );
 
       do
@@ -109,10 +109,10 @@ class f_client : public fiber
 
   private:
     char* _addr;
-    int _port;
+    int32_t _port;
 };
 
-string s_err( int num )
+string s_err( int32_t num )
 {
   switch (num)
   {
@@ -200,12 +200,12 @@ int main(int argc ,char* argv[])
   
   stringstream sstr;
   sstr << argv[2] ;
-  int port;
+  int32_t port;
   sstr >> port;
 
-  int fiber_count = 10;
+  int32_t fiber_count = 10;
   fiber::ptr fcl[fiber_count];
-  for (int i = 0; i < fiber_count; i++ )
+  for (int32_t i = 0; i < fiber_count; i++ )
   {
     fcl[i].reset( new f_client( argv[1], port ) );
     fcl[i]->init();

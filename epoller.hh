@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <tr1/memory>
+#include <stdint.h>
 
 namespace epollers
 {
@@ -20,11 +21,11 @@ namespace epollers
 
       virtual ~epoller();
 
-      int do_epolls();
+      int32_t do_epolls();
 
-      void add( int f );
+      void add( int32_t f );
 
-      void del( int f );
+      void del( int32_t f );
 
       void init();
 
@@ -32,9 +33,9 @@ namespace epollers
 
     private:
       ::epoll_event* raw_events;
-      int rawevents_size;
-      int fds;
-      int own_fd;
+      int32_t rawevents_size;
+      int32_t fds;
+      int32_t own_fd;
   };
 }
 

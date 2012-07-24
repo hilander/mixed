@@ -31,13 +31,13 @@ namespace workers
 
       void iteration();
 
-      void insert_fd( int f );
+      void insert_fd( int32_t f );
 
-      void remove_fd( int f );
+      void remove_fd( int32_t f );
 
-      void block_on_io( int f, fibers::fiber::ptr fp, fiber::current_state s );
+      void block_on_io( int32_t f, fibers::fiber::ptr fp, fiber::current_state s );
 
-      void do_connect( int f, fiber::ptr fp, fiber::current_state s );
+      void do_connect( int32_t f, fiber::ptr fp, fiber::current_state s );
 
       void block_on_message( fibers::fiber::ptr fp );
 
@@ -49,7 +49,7 @@ namespace workers
 
       void write_to_slave( std::tr1::shared_ptr< message_queues::message >& m );
 
-      int workload();
+      int32_t workload();
 
       void set_master( masters::master* m );
 
@@ -67,12 +67,12 @@ namespace workers
       message_queues::message_queue::ptr pipe;
       epollers::epoller::ptr io_facility;
 
-      std::map< int, fibers::fiber::ptr > blocked_fds;
-      std::map< int, fibers::fiber::ptr > blocked_msgs;
+      std::map< int32_t, fibers::fiber::ptr > blocked_fds;
+      std::map< int32_t, fibers::fiber::ptr > blocked_msgs;
       masters::master* my_master;
 
       bool master_allowed;
-      int unspawned_fibers;
+      int32_t unspawned_fibers;
       bool enable_io;
   };
 }

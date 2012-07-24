@@ -51,7 +51,7 @@ scheduler::ptr scheduler::create( std::tr1::shared_ptr< workers::worker > o )
 
 void scheduler::init()
 {
-  const int own_stack_size = 16384;
+  const int32_t own_stack_size = 16384;
   own_context.reset( new ::ucontext_t() );
   own_stack.reset( new vector< char >( own_stack_size ) );
   own_context->uc_stack.ss_sp = own_stack.get();
@@ -59,7 +59,7 @@ void scheduler::init()
   ::getcontext( own_context.get() );
 }
 
-int scheduler::workload()
+int32_t scheduler::workload()
 {
   return runners.size();
 }

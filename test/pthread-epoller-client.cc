@@ -1,6 +1,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include <errno.h>
 #include <cstring>

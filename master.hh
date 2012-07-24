@@ -38,7 +38,7 @@ namespace masters
       std::vector< std::tr1::shared_ptr< workers::worker > > slaves;
       std::vector< ::pthread_t* > slave_threads;
 
-      int workload;
+      int32_t workload;
   };
 }
 

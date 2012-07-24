@@ -3,6 +3,7 @@
 
 #include <tr1/memory>
 #include <ucontext.h>
+#include <stdint.h>
 
 namespace coroutines
 {

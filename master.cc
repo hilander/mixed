@@ -39,7 +39,7 @@ master* master::create( bool eio )
 bool master::its_time_to_end()
 {
   workload = workload > 0 ? workload : 0;
-  int total_workload = own_slave->workload() + workload;
+  int32_t total_workload = own_slave->workload() + workload;
 
   vector< worker::ptr >::iterator vi = slaves.begin();
   for (
@@ -106,7 +106,7 @@ void master::init( bool enable_io )
   cpu_set_t cs;
   if ( sched_getaffinity(0, sizeof(cs), &cs) == 0 )
   {
-    for ( int free_cores = 0; free_cores < ( CPU_COUNT( &cs ) ) - 1; free_cores++ )
+    for ( int32_t free_cores = 0; free_cores < ( CPU_COUNT( &cs ) ) - 1; free_cores++ )
     {
       worker::ptr w( worker::create( enable_io ) );
       w->set_master( this );

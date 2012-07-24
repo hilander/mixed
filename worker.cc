@@ -1,5 +1,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h>
 
 #include <tr1/memory>
 using namespace std::tr1;
@@ -78,7 +79,7 @@ void worker::iteration()
   }
 }
 
-int worker::workload()
+int32_t worker::workload()
 {
   return sched->workload() + unspawned_fibers;
 }
@@ -96,15 +97,15 @@ void worker::set_master( masters::master* m )
 using namespace std;
 void worker::do_epolls()
 {
-  int how_many =  io_facility->do_epolls();
+  int32_t how_many =  io_facility->do_epolls();
   if ( how_many > 0 )
   {
     ::epoll_event* ev = io_facility->get_last_epoll_result();
-    for ( int i = 0; i < how_many; i++)
+    for ( int32_t i = 0; i < how_many; i++)
     {
       ::epoll_event wev = ev[ i ];
-      int ffd = wev.data.fd;
-      map< int, fiber::ptr >::iterator fib = blocked_fds.find( ffd );
+      int32_t ffd = wev.data.fd;
+      map< int32_t, fiber::ptr >::iterator fib = blocked_fds.find( ffd );
       fiber::ptr f = fib->second;
       shared_ptr< vector< char > > buf;
       switch ( f->get_state() )
@@ -146,7 +147,7 @@ void worker::do_epolls()
           {
             //::sockaddr_in sin;
             //::socklen_t sin_size = sizeof( ::sockaddr_in );
-            int afd = ::accept( fib->first, 0, 0 ); //(::sockaddr*)&sin, &sin_size ); // C-call -- C-cast ;P
+            int32_t afd = ::accept( fib->first, 0, 0 ); //(::sockaddr*)&sin, &sin_size ); // C-call -- C-cast ;P
             if ( afd >= 0 )
             {
               f->set_last_accepted_fd( afd );
@@ -184,23 +185,23 @@ void worker::do_epolls()
   }
 }
 
-void worker::insert_fd( int f )
+void worker::insert_fd( int32_t f )
 {
   io_facility->add( f );
 }
 
-void worker::remove_fd( int f )
+void worker::remove_fd( int32_t f )
 {
   io_facility->del( f );
 }
 
-void worker::do_connect( int f, fiber::ptr fp, fiber::current_state s )
+void worker::do_connect( int32_t f, fiber::ptr fp, fiber::current_state s )
 {
   fp->set_state( s );
   blocked_fds[ f ] = fp;
 }
 
-void worker::block_on_io( int f, fiber::ptr fp, fiber::current_state s )
+void worker::block_on_io( int32_t f, fiber::ptr fp, fiber::current_state s )
 {
   fp->set_state( s );
   blocked_fds[ f ] = fp;

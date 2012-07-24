@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <tr1/memory>
+#include <unistd.h>
 using namespace std;
 using namespace std::tr1;
 
@@ -39,7 +40,7 @@ void epoller::init()
   fds = 64;
 }
 
-int epoller::do_epolls()
+int32_t epoller::do_epolls()
 {
   if ( fds > rawevents_size )
   {
@@ -58,7 +59,7 @@ int epoller::do_epolls()
   return 0;
 }
 
-void epoller::add( int f )
+void epoller::add( int32_t f )
 {
   ::epoll_event ev;
   ev.events = EPOLLIN | EPOLLOUT | EPOLLPRI | EPOLLERR | EPOLLHUP;
@@ -69,7 +70,7 @@ void epoller::add( int f )
   fds++;
 }
 
-void epoller::del( int f )
+void epoller::del( int32_t f )
 {
   ::epoll_event ev;
   ::epoll_ctl( own_fd, EPOLL_CTL_DEL, f, &ev );

@@ -24,7 +24,7 @@ class my_coroutine : public coroutines::coroutine
   virtual void go()
   {
     //cout << "ok. gone" << endl;
-    for ( int i = 0; i < 1000000; i++ )
+    for ( int32_t i = 0; i < 1000000; i++ )
     yield();
     //cout << "ok. gone for the second time" << endl;
     //yield();
@@ -51,7 +51,7 @@ int main( int argc, char* argv[] )
 
   coroutine::ptr c = my_coroutine::get();
   
-  for ( int i = 0; i < 1000000; i++ )
+  for ( int32_t i = 0; i < 1000000; i++ )
   {
     c->run( &ctx );
   }
