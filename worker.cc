@@ -84,7 +84,7 @@ int32_t worker::workload()
   return sched->workload() + unspawned_fibers;
 }
 
-void worker::set_master( masters::master* m )
+void worker::set_master( masters::master::ptr m )
 {
   my_master = m;
 }

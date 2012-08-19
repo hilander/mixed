@@ -16,11 +16,11 @@ shared_ptr< epoller > epoller::create()
   return px;
 }
 
-  epoller::epoller()
-  : raw_events( 0 )
-  , rawevents_size( 0 )
-  , fds( 0 )
-  , own_fd( 0 )
+epoller::epoller()
+: raw_events( 0 )
+, rawevents_size( 0 )
+, fds( 0 )
+, own_fd( 0 )
 {
 }
 

@@ -57,16 +57,13 @@ bool master::its_time_to_end()
   if ( total_workload == 0 )
   {
     vector< ::pthread_t* >::iterator wit;
-    //for ( wit = slave_threads.begin(); wit != slave_threads.end(); wit++ )
     for ( vi = slaves.begin(); vi != slaves.end(); vi++ )
     {
       message::ptr m( new service_message( service_message::FINISH_WORK ) );
       (*vi)->write_to_slave( m );
-      //::pthread_cancel( *(*wit) );
     }
     message::ptr m( new service_message( service_message::FINISH_WORK ) );
     own_slave->write_to_slave( m );
-    //std::cout << "its_time_to_end(): finishing work of child threads\n";
   }
 
   return total_workload == 0;
@@ -85,23 +82,19 @@ void master::run()
     own_slave->iteration();
   }
   own_slave->run();
-  //cout << "Master: waiting for slave threads." << its_time_to_end() << endl;
   if ( its_time_to_end() > 0 )
   {
     goto once_again;
   }
   for_each( slave_threads.begin(), slave_threads.end(), &internal_join );
-  //cout << "own_slave: workload = " << own_slave->workload() << endl;
-  //cout << "Master: workload = " << workload << endl;
 once_again:
   ;
-  //cout << "Master: Exit." << endl;
 }
 
 void master::init( bool enable_io )
 {
   own_slave.reset( worker::create( enable_io ) );
-  own_slave->set_master( this );
+  own_slave->set_master( shared_from_this() );
 
   cpu_set_t cs;
   if ( sched_getaffinity(0, sizeof(cs), &cs) == 0 )
@@ -109,13 +102,13 @@ void master::init( bool enable_io )
     for ( int32_t free_cores = 0; free_cores < ( CPU_COUNT( &cs ) ) - 1; free_cores++ )
     {
       worker::ptr w( worker::create( enable_io ) );
-      w->set_master( this );
+      w->set_master( shared_from_this() );
       slaves.push_back( w );
       ::pthread_t* pt = new ::pthread_t;
       ::pthread_create( pt
-          , 0
-          , reinterpret_cast< void*(*)(void*) >( &worker_pthread_starter )
-          , reinterpret_cast< void* >( w.get() ) );
+                      , 0
+                      , reinterpret_cast< void*(*)(void*) >( &worker_pthread_starter )
+                      , reinterpret_cast< void* >( w.get() ) );
       slave_threads.push_back( pt );
     }
   }

@@ -8,7 +8,7 @@
 
 namespace masters
 {
-  class master
+  class master : public std::tr1::enable_shared_from_this< master >
   {
     public:
       typedef std::tr1::shared_ptr< master > ptr;

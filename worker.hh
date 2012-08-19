@@ -51,7 +51,7 @@ namespace workers
 
       int32_t workload();
 
-      void set_master( masters::master* m );
+      void set_master( std::tr1::shared_ptr< masters::master > m );
 
     private:
       worker( bool eio = true );
@@ -69,7 +69,7 @@ namespace workers
 
       std::map< int32_t, fibers::fiber::ptr > blocked_fds;
       std::map< int32_t, fibers::fiber::ptr > blocked_msgs;
-      masters::master* my_master;
+      std::tr1::shared_ptr< masters::master > my_master;
 
       bool master_allowed;
       int32_t unspawned_fibers;
