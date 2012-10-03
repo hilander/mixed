@@ -1,10 +1,15 @@
 #include <algorithm>
+#include <exception>
+#include <iostream>
 using namespace std;
 
 #include <pthread.h>
+#include <unistd.h>
 
 #include <tr1/memory>
+#include <tr1/functional>
 using namespace std::tr1;
+using namespace std::tr1::placeholders;
 
 #include <vector>
 using namespace std;
@@ -29,44 +34,11 @@ void* worker_pthread_starter( worker* w )
   return 0;
 }
 
-master* master::create( bool eio )
+master::ptr master::create( bool eio )
 {
-  master* p = new master();
+  master::ptr p( new master() );
   p->init( eio );
   return p;
-}
-
-bool master::its_time_to_end()
-{
-  workload = workload > 0 ? workload : 0;
-  int32_t total_workload = own_slave->workload() + workload;
-
-  vector< worker::ptr >::iterator vi = slaves.begin();
-  for (
-      ; vi != slaves.end()
-      ; vi++ )
-  {
-    if ( vi->get() != 0 )
-    {
-      worker::ptr tp = *vi;
-      total_workload += tp->workload();
-    }
-  }
-
-  //send FINISH_WORK to all workers
-  if ( total_workload == 0 )
-  {
-    vector< ::pthread_t* >::iterator wit;
-    for ( vi = slaves.begin(); vi != slaves.end(); vi++ )
-    {
-      message::ptr m( new service_message( service_message::FINISH_WORK ) );
-      (*vi)->write_to_slave( m );
-    }
-    message::ptr m( new service_message( service_message::FINISH_WORK ) );
-    own_slave->write_to_slave( m );
-  }
-
-  return total_workload == 0;
 }
 
 void internal_join( ::pthread_t* pt )
@@ -76,19 +48,12 @@ void internal_join( ::pthread_t* pt )
 
 void master::run()
 {
-  while ( ! its_time_to_end() )
+  while ( true )
   {
     read_message_queues();
     own_slave->iteration();
+    ::usleep( 100 );
   }
-  own_slave->run();
-  if ( its_time_to_end() > 0 )
-  {
-    goto once_again;
-  }
-  for_each( slave_threads.begin(), slave_threads.end(), &internal_join );
-once_again:
-  ;
 }
 
 void master::init( bool enable_io )
@@ -112,31 +77,28 @@ void master::init( bool enable_io )
       slave_threads.push_back( pt );
     }
   }
+  cout << "master::init(): spawned " << slave_threads.size() + 1 << " slaves " << endl;
 }
 
 worker::ptr master::get_worker_with_smallest_workload()
 {
-  worker::ptr sp = own_slave;
-
-  for ( vector< worker::ptr >::iterator si = slaves.begin()
-      ; si != slaves.end()
-      ; si++ )
+  worker::ptr sp;
+  static size_t current_slave = 0;
+  if ( current_slave > 0 )
   {
-    worker::ptr st = *si;
-    if ( st.get() != 0 )
-    {
-      if ( sp->workload() > st->workload() )
-      {
-        sp = st;
-      }
-    }
+    sp = slaves[ current_slave - 1 ];
   }
-
+  else
+  {
+    sp = own_slave;
+  }
+  ++current_slave;
+  current_slave %= slaves.size() + 1;
+  cout << "current slave: " << current_slave << endl;
   return sp;
 }
 
-#include <iostream>
-using namespace std;
+//using namespace std;
 void master::spawn( fiber::ptr& f )
 {
   service_message::ptr p( new service_message( service_message::SPAWN ) );
@@ -153,41 +115,49 @@ void master::read_from_slave( worker::ptr s )
 
   while ( s->read_for_master( m ) )
   {
+    static int num = 1;
+    cout << "master::read_from_slave(): got message #" << num++ << endl;
     service_message::ptr sm = dynamic_pointer_cast< service_message >( m );
     switch ( sm->service )
     {
       case service_message::SPAWN:
         {
+          cout << "Type = SPAWN" << endl;
           fiber::ptr fp = sm->fiber_to_spawn;
           worker::ptr s = get_worker_with_smallest_workload();
           s->write_to_slave( m );
           workload++;
-          //cout << "spawn\n";
           break;
         }
 
       case service_message::SPAWN_REPLY:
+        cout << "Type = SPAWN_REPLY" << endl;
         workload--;
         break;
 
       case service_message::BROADCAST_MESSAGE:
         {
+          cout << "Type = BROADCAST_MESSAGE" << endl;
           own_slave->write_to_slave( m );
-          vector< worker::ptr >::iterator si = slaves.begin();
-          for (
-              ; si != slaves.end()
-              ; si++ )
-          {
-            worker::ptr sl = *si;
-            if ( sl.get() != 0 )
-            {
-              sl->write_to_slave( m );
-            }
-          }
+          for_each( slaves.begin(), slaves.end()
+                  , bind( &worker::write_to_slave, _1, m ) );
           break;
         }
 
-      case service_message::FINISH_WORK:
+      case service_message::SHUTDOWN:
+      {
+        cout << "Type = SHUTDOWN" << endl;
+        service_message::ptr msg( new service_message( service_message::FINISH_WORK ) );
+        message::ptr mm = static_pointer_cast< message >( msg );
+        for_each( slaves.begin(), slaves.end()
+                , bind( &worker::write_to_slave, _1, mm ) );
+        own_slave->write_to_slave( mm );
+      }
+        break;
+
+      default:
+        cout << "Type = exception!" << endl;
+        throw exception();
         break;
     }
   }

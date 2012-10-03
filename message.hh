@@ -47,10 +47,11 @@ namespace message_queues
 
     enum available_services
     {
-      SPAWN,
-      SPAWN_REPLY,
-      BROADCAST_MESSAGE,
-      FINISH_WORK
+        SPAWN
+      , SPAWN_REPLY
+      , BROADCAST_MESSAGE
+      , SHUTDOWN
+      , FINISH_WORK
     };
 
     service_message( available_services s );

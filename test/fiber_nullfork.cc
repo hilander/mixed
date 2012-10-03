@@ -38,6 +38,7 @@ class starter : public fiber
 
     virtual void go()
     {
+      cout << "fiber_nullfork::starter::go(): spawning " << et_count << " fibers." << endl;
       for ( int i = 0; i < et_count; i++ )
       {
         fiber::ptr et( new empty_fiber() );
@@ -60,7 +61,7 @@ int main( int argc, char* argv[] )
   int et_size = g.get< int >( 's' );
   stopwatch sw( stopwatch::USEC );
   sw.reset();
-  master* mp = master::create( false );
+  master::ptr mp = master::create( false );
   fiber::ptr sp( new starter( et_size ) );
   sp->init();
   mp->spawn( sp );

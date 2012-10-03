@@ -254,9 +254,6 @@ void worker::process_service_message( message::ptr& m )
     case service_message::SPAWN:
       {
         sched->insert( sm->fiber_to_spawn );
-        sm.reset( new service_message( service_message::SPAWN_REPLY ) );
-        message::ptr reply = dynamic_pointer_cast< message >( sm );
-        pipe->write_to_master( reply );
       }
       break;
 
@@ -310,8 +307,8 @@ void worker::spawn( fiber::ptr& f )
   m.reset( new service_message( service_message::SPAWN ) );
   m->fiber_to_spawn = nf;
   message::ptr sm = static_pointer_cast< message >( m );
-  //pipe->write_to_master( sm );
-  pipe->write_to_slave( sm );
+  pipe->write_to_master( sm );
+  // pipe->write_to_slave( sm );
 }
 
 bool worker::read_for_master( message::ptr& m )

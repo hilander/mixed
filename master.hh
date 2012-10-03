@@ -13,7 +13,7 @@ namespace masters
     public:
       typedef std::tr1::shared_ptr< master > ptr;
 
-      static master* create( bool eio = true );
+      static master::ptr create( bool eio = true );
 
       void run();
 
@@ -25,8 +25,6 @@ namespace masters
 
     private:
       master();
-
-      bool its_time_to_end();
 
       void read_from_slave( workers::worker::ptr s );
       void read_message_queues();
